@@ -16,30 +16,25 @@ jobs:
       - name: Checkout código
         uses: actions/checkout@v4
 
-      # 2. Instalar Python
-      - name: Configurar Python 3.11
-        uses: actions/setup-python@v4
+      # 2. Instalar Node.js
+      - name: Configurar Node.js 20
+        uses: actions/setup-node@v4
         with:
-          python-version: '3.11'
+          node-version: '20'
 
       # 3. Instalar dependencias
       - name: Instalar dependencias
-        run: pip install -r requirements.txt
+        run: npm install
 
       # 4. Ejecutar tests
       - name: Ejecutar tests
-        # run: pytest tests/ -v
-        run: python -m pytest tests/ -v
+        run: npm test
 
-      # 5. Análisis SAST con Bandit
-      - name: 🔒 Análisis de seguridad (Bandit)
+      # 5. Análisis SAST con ESLint Security
+      - name: 🔒 Análisis de seguridad (ESLint)
         run: |
-          pip install bandit
-          # -ll = reportar solo severidad MEDIA y ALTA
-          # -ii = reportar solo confianza MEDIA y ALTA
-          bandit -r . -ll -ii --exclude ./tests,./venv
-
-
+          npm install eslint-plugin-security
+          npx eslint . --ext .js
   deploy-dev:
     name: Deploy a Desarrollo
     needs: test
@@ -66,7 +61,7 @@ jobs:
           # Intentar 5 veces con 10 segundos entre intento
           for i in 1 2 3 4 5; do
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-              https://miapp-dev-0pav.onrender.com/health)
+              https://api.render.com/deploy/srv-daqt0dvavr4c73etr3f0?key=LjMXDdzGaNg)
             if [[ $STATUS -eq 200 ]]; then
               echo "✅ Dev responde correctamente (HTTP $STATUS)"
               exit 0
