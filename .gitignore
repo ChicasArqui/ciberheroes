@@ -1,29 +1,9 @@
-
-# Dependencias de Node.js
 node_modules/
-
-# Variables de entorno y secretos
+coverage/
 .env
 .env.*
 !.env.example
-!.env.*.example
-
-# Logs
-*.log
 npm-debug.log*
-
-# Archivos generados
-dist/
-build/
-coverage/
-
-# Archivos del sistema y editor
-.DS_Store
-Thumbs.db
-.vscode/
-.idea/
-
-# Python (archivos antiguos del taller)
 __pycache__/
-*.pyc
 .venv/
+venv/
