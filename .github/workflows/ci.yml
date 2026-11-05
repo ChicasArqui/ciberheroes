@@ -66,9 +66,6 @@ jobs:
       - name: Verify development API
         env:
           DEV_URL: https://miapp-dev-0pav.onrender.com
-      - name: Verificar salud del backend
-        env:
-          DEV_URL: ${{ vars.RENDER_DEV_URL }}
         run: |
           for i in $(seq 1 12); do
             if curl --fail --silent --show-error \
@@ -102,5 +99,3 @@ jobs:
           fi
           curl --fail --silent --show-error --max-time 60 \
             --request POST "$RENDER_PROD_HOOK" --output /dev/null
-
-          curl --fail --silent --show-error "$DEV_URL/health"
