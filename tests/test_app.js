@@ -10,4 +10,10 @@ test('GET / returns ok', async () => {
 test('GET /health returns healthy', async () => {
     const res = await request(app).get('/health')
     expect(res.statusCode).toBe(200)
+    expect(res.body).toEqual({ status: 'healthy' })
+})
+
+test('GET /missing returns 404', async () => {
+    const res = await request(app).get('/missing')
+    expect(res.statusCode).toBe(404)
 })

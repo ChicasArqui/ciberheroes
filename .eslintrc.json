@@ -1,0 +1,15 @@
+{
+  "root": true,
+  "env": {
+    "node": true,
+    "es2022": true
+  },
+  "extends": ["eslint:recommended", "plugin:security/recommended-legacy"],
+  "overrides": [
+    {
+      "files": ["tests/**/*.js"],
+      "env": { "jest": true }
+    }
+  ],
+  "ignorePatterns": ["node_modules/", "coverage/"]
+}
