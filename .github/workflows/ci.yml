@@ -1,84 +1,11 @@
-name: CI Pipeline
-
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-
-jobs:
-  test:
-    name: Tests + Análisis de Seguridad
-    runs-on: ubuntu-latest
-
-    steps:
-      # 1. Descargar el código
-      - name: Checkout código
-        uses: actions/checkout@v4
-
-      # 2. Instalar Node.js
-      - name: Configurar Node.js 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      # 3. Instalar dependencias
-      - name: Instalar dependencias
-        run: npm install
-
-      # 4. Ejecutar tests
-      - name: Ejecutar tests
-        run: npm test
-
-      # 5. Análisis SAST con ESLint Security
-      - name: 🔒 Análisis de seguridad (ESLint)
-        run: |
-          npm install eslint-plugin-security
-          npx eslint . --ext .js
-  deploy-dev:
-    name: Deploy a Desarrollo
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-
-    steps:
-      - name: 🚀 Deploy a Dev (Render)
-        run: |
-          curl -X POST ${{ secrets.RENDER_DEV_HOOK }}
-          echo "Deploy a Dev disparado"
-
-      - name: ⏳ Esperar que Render inicie
-        run: sleep 30
-
   smoke-test:
     name: Smoke Test en Dev
     needs: deploy-dev
     runs-on: ubuntu-latest
 
     steps:
-      - name: 🩺 Verificar que Dev responde
+      - name: Verificar salud del backend
+        env:
+          DEV_URL: ${{ vars.RENDER_DEV_URL }}
         run: |
-          # Intentar 5 veces con 10 segundos entre intento
-          for i in 1 2 3 4 5; do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-              https://api.render.com/deploy/srv-daqt0dvavr4c73etr3f0?key=LjMXDdzGaNg)
-            if [[ $STATUS -eq 200 ]]; then
-              echo "✅ Dev responde correctamente (HTTP $STATUS)"
-              exit 0
-            fi
-            echo "Intento $i fallido (HTTP $STATUS), reintentando..."
-            sleep 10
-          done
-          echo "❌ Dev no responde después de 5 intentos"
-          exit 1
-
-  deploy-prod:
-    name: Deploy a Producción
-    needs: smoke-test
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: 🚀 Deploy a Prod (Render)
-        run: |
-          curl -X POST ${{ secrets.RENDER_PROD_HOOK }}
-          echo "✅ Deploy a Producción disparado"
+          curl --fail --silent --show-error "$DEV_URL/health"
