@@ -6,14 +6,29 @@
     "node": "24.x"
   },
   "scripts": {
-    "start": "node app.js",
-    "test": "jest",
-    "lint": "eslint . --ext .js --max-warnings=0"
-  },
-  "jest": {
-    "testEnvironment": "node",
-    "testMatch": ["**/tests/**/*.js"]
-  },
+  "start": "node app.js",
+  "test": "jest",
+  "test:coverage": "jest --coverage --ci --runInBand",
+  "lint": "eslint . --ext .js --max-warnings=0"
+},
+"jest": {
+  "testEnvironment": "node",
+  "testMatch": ["**/tests/**/*.js"],
+  "collectCoverageFrom": [
+    "app.js",
+    "backend/src/**/*.js",
+    "!backend/src/server.js",
+    "!**/*.test.js"
+  ],
+  "coverageThreshold": {
+    "global": {
+      "branches": 85,
+      "functions": 85,
+      "lines": 85,
+      "statements": 85
+    }
+  }
+},
   "dependencies": {
     "express": "^4.18.2"
   },

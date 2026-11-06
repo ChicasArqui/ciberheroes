@@ -27,8 +27,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests
-        run: npm test -- --ci --runInBand
+      - name: Run tests with 85% coverage
+        run: npm run test:coverage
 
       - name: Security analysis with ESLint
         run: npm run lint

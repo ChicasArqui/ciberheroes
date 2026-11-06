@@ -16,7 +16,7 @@ app.get('/health', (req, res) => {
     res.status(200).json({ status: 'healthy' })
 })
 
-// Importing the app in tests must not start a listening server.
+/* istanbul ignore next -- server startup tested separately */
 if (require.main === module) {
     app.listen(PORT, () => {
         console.log(`Server on port ${PORT}`)
