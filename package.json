@@ -1,0 +1,26 @@
+{
+  "name": "ciberheroes",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": "24.x"
+  },
+  "scripts": {
+    "start": "node app.js",
+    "test": "jest",
+    "lint": "eslint . --ext .js --max-warnings=0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": ["**/tests/**/*.js"]
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "jest": "^30.5.2",
+    "supertest": "^7.1.3",
+    "eslint": "^8.55.0",
+    "eslint-plugin-security": "^2.1.0"
+  }
+}

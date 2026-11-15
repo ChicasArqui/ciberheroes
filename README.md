@@ -1,4 +1,3 @@
-
 <div align="center">
 
 ![CiberHéroes](https://capsule-render.vercel.app/api?type=waving&color=0:4C1D95,50:7C3AED,100:C4B5FD&height=220&section=header&text=CiberH%C3%A9roes&fontSize=55&fontColor=ffffff&animation=fadeIn&fontAlignY=38&desc=Aprende%20%7C%20Juega%20%7C%20Prot%C3%A9gete&descAlignY=60&descSize=19)
@@ -22,7 +21,6 @@
 A través de juegos, historias, desafíos y recompensas, buscamos convertir el aprendizaje sobre ciberseguridad en una experiencia divertida, accesible y significativa.
 
 >  **Aprender a protegerse en internet también puede ser una aventura.**
-
 ##  Contexto y problemática
 
 Actualmente, los niños y niñas interactúan con plataformas digitales desde edades tempranas. Aunque internet ofrece oportunidades educativas y sociales, también puede exponerlos a riesgos como el **grooming, la manipulación en línea y la divulgación de información personal**.
@@ -59,7 +57,6 @@ La plataforma propone una experiencia de aprendizaje progresiva, organizada en *
 Cada nivel busca desarrollar habilidades que permitan reconocer riesgos y responder de manera responsable ante situaciones digitales.
 
 > 🔐 **Un verdadero CiberHéroe aprende, piensa antes de actuar y sabe cuándo pedir ayuda.**
-
 ## Stack tecnológico
 
 CiberHéroes se desarrolla utilizando tecnologías del ecosistema JavaScript y una arquitectura web con frontend y backend.
@@ -128,7 +125,6 @@ npm run dev
 ```
 
 > ⚠️ Los comandos de inicio y las variables de entorno deben verificarse con la configuración de la rama que se desea ejecutar.
-
 ## Seguridad y enfoque educativo
 
 CiberHéroes busca promover una experiencia de aprendizaje responsable, considerando la protección de los menores como un principio fundamental.
