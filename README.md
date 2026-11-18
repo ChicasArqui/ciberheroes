@@ -1,9 +1,160 @@
-# ciberheroes ☆
+<div align="center">
 
-#### CiberHéroes es una plataforma educativa interactiva orientada a niñas, niños y adolescentes (NNA). Está diseñada bajo los estrictos principios de Security by Design, privacidad por defecto y supervisión parental activa. Su objetivo principal es mitigar las amenazas en entornos digitales como el grooming a través de un videojuego educativo modular que promueve la alfabetización digital preventiva.
+![CiberHéroes](https://capsule-render.vercel.app/api?type=waving&color=0:4C1D95,50:7C3AED,100:C4B5FD&height=220&section=header&text=CiberH%C3%A9roes&fontSize=55&fontColor=ffffff&animation=fadeIn&fontAlignY=38&desc=Aprende%20%7C%20Juega%20%7C%20Prot%C3%A9gete&descAlignY=60&descSize=19)
 
-## Created & Maintained by
-### We are the core team that designed and built this project.
+### 🛡️ Pequeños héroes, grandes decisiones digitales
 
-| <div align="center"><a href="https://github.com/edith-hu"><img src="https://github.com/edith-hu.png" width="85px" height="85px" style="border-radius:50%"/></a><br>[`@edith-hu`](https://github.com/edith-hu)</div> | <div align="center"><a href="https://github.com/hexdii"><img src="https://github.com/hexdii.png" width="85px" height="85px" style="border-radius:50%"/></a><br>[`@hexdii`](https://github.com/hexdii)</div> | <div align="center"><a href="https://github.com/PengwinKingdom"><img src="https://github.com/PengwinKingdom.png" width="85px" height="85px" style="border-radius:50%"/></a><br>[`@PengwinKingdom`](https://github.com/PengwinKingdom)</div> | <div align="center"><a href="https://github.com/Stephlyy"><img src="https://github.com/Stephlyy.png" width="85px" height="85px" style="border-radius:50%"/></a><br>[`@Stephlyy`](https://github.com/Stephlyy)</div> |
-| :---: | :---: | :---: | :---: |
+**Una aventura interactiva para aprender a navegar con seguridad.**
+
+![Estado](https://img.shields.io/badge/Estado-En%20desarrollo-8B5CF6?style=for-the-badge)
+![Tipo](https://img.shields.io/badge/Proyecto-Académico-6D28D9?style=for-the-badge)
+![Plataforma](https://img.shields.io/badge/Plataforma-Web-A78BFA?style=for-the-badge)
+
+</div>
+
+---
+
+## Sobre CiberHéroes
+
+**CiberHéroes** es un proyecto académico de desarrollo web que propone una plataforma educativa gamificada, diseñada para enseñar a niños y niñas a reconocer riesgos en internet y desarrollar hábitos de navegación seguros.
+
+A través de juegos, historias, desafíos y recompensas, buscamos convertir el aprendizaje sobre ciberseguridad en una experiencia divertida, accesible y significativa.
+
+>  **Aprender a protegerse en internet también puede ser una aventura.**
+##  Contexto y problemática
+
+Actualmente, los niños y niñas interactúan con plataformas digitales desde edades tempranas. Aunque internet ofrece oportunidades educativas y sociales, también puede exponerlos a riesgos como el **grooming, la manipulación en línea y la divulgación de información personal**.
+
+La falta de conocimientos sobre estas amenazas puede dificultar que identifiquen situaciones peligrosas o sepan cómo actuar.
+
+Frente a esta problemática, CiberHéroes propone una alternativa educativa basada en el juego, la prevención y el desarrollo de habilidades digitales.
+
+## Nuestro objetivo
+
+Desarrollar una plataforma web educativa que fortalezca los conocimientos de seguridad digital infantil mediante actividades interactivas y experiencias de aprendizaje gamificadas.
+
+### Objetivos específicos
+
+- Enseñar a identificar comportamientos sospechosos en internet.
+- Promover la protección de datos personales y la privacidad.
+- Fomentar la comunicación con adultos de confianza.
+- Reforzar el aprendizaje mediante niveles, retos y recompensas.
+
+## Aprende jugando
+
+La plataforma propone una experiencia de aprendizaje progresiva, organizada en **4 módulos educativos con 5 niveles cada uno**.
+
+<div align="center">
+
+| 📚 Aprende | 🎯 Supera desafíos |
+|:---:|:---:|
+| Descubre conceptos de seguridad digital. | Resuelve situaciones y toma decisiones. |
+| **🏆 Gana recompensas** | **🛡️ Conviértete en héroe** |
+| Acumula puntos por tus avances. | Aplica lo aprendido para navegar con seguridad. |
+
+</div>
+
+Cada nivel busca desarrollar habilidades que permitan reconocer riesgos y responder de manera responsable ante situaciones digitales.
+
+> 🔐 **Un verdadero CiberHéroe aprende, piensa antes de actuar y sabe cuándo pedir ayuda.**
+## Stack tecnológico
+
+CiberHéroes se desarrolla utilizando tecnologías del ecosistema JavaScript y una arquitectura web con frontend y backend.
+
+<div align="center">
+
+### Frontend
+
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![JavaScript](https://img.shields.io/badge/JavaScript-323330?style=for-the-badge&logo=javascript&logoColor=F7DF1E)
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
+
+### Backend y base de datos
+
+![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
+![Express](https://img.shields.io/badge/Express-404D59?style=for-the-badge&logo=express&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)
+
+### Herramientas de desarrollo
+
+![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
+![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)
+![VS Code](https://img.shields.io/badge/VS_Code-007ACC?style=for-the-badge&logo=visualstudiocode&logoColor=white)
+
+</div>
+
+## Instalación y ejecución local
+
+### 1. Requisitos
+
+- Node.js y npm.
+- Git.
+- Un editor de código, como Visual Studio Code.
+- Configuración de MongoDB, según el entorno utilizado.
+
+### 2. Clonar el repositorio
+
+```bash
+git clone https://github.com/ChicasArqui/ciberheroes.git
+cd ciberheroes
+```
+
+### 3. Instalar dependencias
+
+Desde las carpetas correspondientes al frontend y backend, ejecutar:
+
+```bash
+npm install
+```
+
+### 4. Configurar el entorno
+
+Crear los archivos de configuración necesarios tomando como referencia los ejemplos disponibles en el repositorio.
+
+No publicar credenciales, contraseñas ni cadenas privadas de conexión.
+
+### 5. Iniciar el proyecto
+
+Ejecutar en cada componente el script de desarrollo definido en su `package.json`.
+
+Por ejemplo, cuando esté disponible:
+
+```bash
+npm run dev
+```
+
+> ⚠️ Los comandos de inicio y las variables de entorno deben verificarse con la configuración de la rama que se desea ejecutar.
+## Seguridad y enfoque educativo
+
+CiberHéroes busca promover una experiencia de aprendizaje responsable, considerando la protección de los menores como un principio fundamental.
+
+El contenido educativo está orientado a fortalecer la prevención, la privacidad, la toma de decisiones seguras y la búsqueda de ayuda ante situaciones de riesgo.
+
+
+## Equipo de desarrollo
+
+<div align="center">
+
+**Desarrollado por un equipo de estudiantes comprometidas con la educación y la seguridad digital.**
+
+[@edith-hu](https://github.com/edith-hu) ·
+[@hexdii](https://github.com/hexdii) ·
+[@PengwinKingdom](https://github.com/PengwinKingdom) ·
+[@Stephlyy](https://github.com/Stephlyy)
+
+</div>
+
+---
+
+<div align="center">
+
+### 💜 Formando pequeños héroes digitales
+
+**Porque cada niño merece explorar internet con conocimiento, confianza y seguridad.**
+
+*CiberHéroes*
+
+![Footer](https://capsule-render.vercel.app/api?type=waving&color=0:C4B5FD,50:7C3AED,100:4C1D95&height=110&section=footer)
+
+</div>
