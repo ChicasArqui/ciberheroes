@@ -8,7 +8,9 @@
     "test": "jest --runInBand"
   },
   "dependencies": {
-    "express": "^4.21.2"
+    "dotenv": "^18.0.10",
+    "express": "^4.21.2",
+    "mongoose": "^9.12.2"
   },
   "devDependencies": {
     "jest": "^29.7.0",

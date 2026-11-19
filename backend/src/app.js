@@ -1,4 +1,5 @@
 const express = require('express');
+const { getDatabaseStatus } = require('./config/database');
 
 const app = express();
 
@@ -15,8 +16,16 @@ app.get('/', (req, res) => {
   });
 });
 
+
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'healthy' });
+  const database = getDatabaseStatus();
+
+  res.status(200).json({
+    status: 'healthy',
+    server: 'running',
+    database
+  });
 });
+
 
 module.exports = app;
