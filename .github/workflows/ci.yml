@@ -81,21 +81,3 @@ jobs:
           done
           echo "Development API did not become healthy"
           exit 1
-
-  deploy-prod:
-    name: Deploy to production
-    needs: smoke-test
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    steps:
-      - name: Trigger Render production deploy
-        env:
-          RENDER_PROD_HOOK: ${{ secrets.RENDER_PROD_HOOK }}
-        run: |
-          if [ -z "$RENDER_PROD_HOOK" ]; then
-            echo "Missing repository secret RENDER_PROD_HOOK"
-            exit 1
-          fi
-          curl --fail --silent --show-error --max-time 60 \
-            --request POST "$RENDER_PROD_HOOK" --output /dev/null
