@@ -10,10 +10,10 @@ export default function PipoScene({ welcome = false }) {
       <div className="pipo-shadow" />
       <img
         className="pipo-image"
-        src="/assets/pipo-bienvenida.svg"
-        alt="Pipo, una tortuga verde con un pañuelo azul y un escudo, te da la bienvenida"
-        width="600"
-        height="650"
+        src={welcome ? "/assets/pipo-saludo.png" : "/assets/pipo-bienvenida.svg"}
+        alt="Pipo, nuestra tortuga verde con su pañuelo azul y escudo"
+        width={welcome ? 1254 : 600}
+        height={welcome ? 1254 : 650}
         fetchPriority="high"
       />
       <span className="pipo-name">Tu compañero de aventuras</span>
