@@ -8,7 +8,11 @@ describe('API CiberHeroes', () => {
     const response = await request(app).get('/health');
 
     expect(response.statusCode).toBe(200);
-    expect(response.body).toEqual({ status: 'healthy' });
+    expect(response.body).toEqual({
+      status: 'healthy',
+      server: 'running',
+      database: expect.stringMatching(/^(connected|disconnected)$/)
+    });
   });
 
   test('GET / responde correctamente', async () => {
