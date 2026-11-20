@@ -4,15 +4,21 @@ import Header from './components/Header.jsx';
 import PipoScene from './components/PipoScene.jsx';
 import WelcomePage from './pages/WelcomePage.jsx';
 import RoleSelectionPage from './pages/RoleSelectionPage.jsx';
+import GuardianRegisterPage from './pages/GuardianRegisterPage.jsx';
 
+function getScreenFromHash() {
+    if (window.location.hash === '#roles') return 'roles';
+    if (window.location.hash === '#guardian-register') return 'guardian-register';
+    return 'welcome';
+}
 export default function App() {
-  const [screen, setScreen] = useState(window.location.hash === '#roles' ? 'roles' : 'welcome');
+  const [screen, setScreen] = useState(getScreenFromHash);
   const [notice, setNotice] = useState('');
 
   useEffect(() => {
     const handlePopState = () => {
       setNotice('');
-      setScreen(window.location.hash === '#roles' ? 'roles' : 'welcome');
+      setScreen(getScreenFromHash);
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
@@ -31,9 +37,15 @@ export default function App() {
   };
 
   const showScopeNotice = (role) => {
-    const roleName = role === 'hero' ? 'CiberHéroe' : 'Guardián';
-    setNotice(`Has elegido el espacio de ${roleName}. La siguiente pantalla se integrará en una tarea posterior.`);
-  };
+  if (role === 'guardian') {
+    setNotice('');
+    setScreen('guardian-register');
+    window.history.pushState({ screen: 'guardian-register' }, '', '#guardian-register');
+    return;
+  }
+
+  setNotice('El acceso de CiberHéroe se integrará en una tarea posterior.');
+};
 
   const showAbout = () => setNotice('CiberHéroes es una experiencia educativa para niñas y niños de 8 a 13 años, acompañada por un adulto de confianza.');
   const showLoginScope = () => setNotice('El inicio de sesión se integrará cuando esté listo el backend. En esta entrega solo preparamos la bienvenida y la selección de rol.');
@@ -44,9 +56,13 @@ export default function App() {
       <main className="main-content">
         <div className={`stage ${screen === 'welcome' ? 'welcome-stage' : 'roles-stage'}`}>
           <section className="content" aria-live="polite">
-            {screen === 'welcome'
-              ? <WelcomePage onStart={openRoleSelection} onLogin={showLoginScope} />
-              : <RoleSelectionPage onBack={goWelcome} onRole={showScopeNotice} />}
+            {screen === 'welcome' ? (
+              <WelcomePage onStart={openRoleSelection} onLogin={showLoginScope} />
+            ) : screen === 'roles' ? (
+              <RoleSelectionPage onBack={goWelcome} onRole={showScopeNotice} />
+            ) : (
+              <GuardianRegisterPage />
+            )}
             {notice && (
               <div className="scope-notice" role="status">
                 <Info size={19} aria-hidden="true" />
