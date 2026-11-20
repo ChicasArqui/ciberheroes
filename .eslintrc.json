@@ -11,5 +11,10 @@
       "env": { "jest": true }
     }
   ],
-  "ignorePatterns": ["node_modules/", "coverage/"]
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/coverage/**",
+    "frontend/**",
+    "frontend-temporal/**"
+  ]
 }
