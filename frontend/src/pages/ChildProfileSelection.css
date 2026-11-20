@@ -1,0 +1,67 @@
+
+.child-back-button {
+  background: transparent;
+  border: 0;
+  padding: 10px 0;
+  margin-bottom: 30px;
+  color: #536174;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.child-back-button:hover {
+  color: #7e57c2;
+}
+
+.child-profile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 30px;
+}
+
+.child-profile-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  min-height: 115px;
+  padding: 18px;
+  background: #ffffff;
+  border: 2px solid #e5d4ff;
+  border-radius: 16px;
+  color: #14072b;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: left;
+}
+
+.child-profile-card:hover {
+  border-color: #7e57c2;
+  background: #faf7ff;
+}
+
+.child-profile-card:focus-visible,
+.child-back-button:focus-visible {
+  outline: 3px solid #7e57c2;
+  outline-offset: 3px;
+}
+
+.child-profile-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #ebddff;
+  font-size: 30px;
+}
+
+@media (max-width: 480px) {
+  .child-profile-grid {
+    grid-template-columns: 1fr;
+  }
+}
