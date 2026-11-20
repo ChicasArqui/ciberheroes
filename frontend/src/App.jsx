@@ -1,110 +1,68 @@
+import { useEffect, useState } from 'react';
+import { Info, X } from 'lucide-react';
+import Header from './components/Header.jsx';
+import PipoScene from './components/PipoScene.jsx';
+import WelcomePage from './pages/WelcomePage.jsx';
+import RoleSelectionPage from './pages/RoleSelectionPage.jsx';
 
-import { useState } from 'react';
-import './App.css';
+export default function App() {
+  const [screen, setScreen] = useState(window.location.hash === '#roles' ? 'roles' : 'welcome');
+  const [notice, setNotice] = useState('');
 
-const modules = [
-  { id: 1, title: 'Identificar Extraños', icon: '🕵️' },
-  { id: 2, title: 'Regalos Falsos', icon: '🎁' },
-  { id: 3, title: 'Secretos y Límites', icon: '🛡️' },
-  { id: 4, title: 'Ciber Escudo Pro', icon: '🏆' },
-];
+  useEffect(() => {
+    const handlePopState = () => {
+      setNotice('');
+      setScreen(window.location.hash === '#roles' ? 'roles' : 'welcome');
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
-const achievements = [
-  { icon: '🛡️', name: 'Ciber-Escudo' },
-  { icon: '🔒', name: 'Guardián' },
-  { icon: '❤️', name: 'Confianza' },
-  { icon: '⭐', name: 'Antitrampas' },
-];
+  const openRoleSelection = () => {
+    setNotice('');
+    setScreen('roles');
+    window.history.pushState({ screen: 'roles' }, '', '#roles');
+  };
 
-function App() {
-  const [selectedModule, setSelectedModule] = useState(null);
+  const goWelcome = () => {
+    setNotice('');
+    setScreen('welcome');
+    window.history.pushState({ screen: 'welcome' }, '', '#inicio');
+  };
+
+  const showScopeNotice = (role) => {
+    const roleName = role === 'hero' ? 'CiberHéroe' : 'Guardián';
+    setNotice(`Has elegido el espacio de ${roleName}. La siguiente pantalla se integrará en una tarea posterior.`);
+  };
+
+  const showAbout = () => setNotice('CiberHéroes es una experiencia educativa para niñas y niños de 8 a 13 años, acompañada por un adulto de confianza.');
+  const showLoginScope = () => setNotice('El inicio de sesión se integrará cuando esté listo el backend. En esta entrega solo preparamos la bienvenida y la selección de rol.');
 
   return (
-    <main className="game-screen">
-      <header className="header">
-        <nav className="nav-tabs">
-          <button onClick={() => setSelectedModule(null)}>🏠 INICIO</button>
-          <button onClick={() => setSelectedModule(modules[0])}>📖 LECCIONES</button>
-          <button disabled>🛍️ TIENDA</button>
-          <button disabled>🏆 LOGROS</button>
-          <button disabled>👤 PERFIL</button>
-        </nav>
-
-        <div className="brand">
-          <h1>CIBERHÉROES</h1>
-          <p>🛡️ Protegiéndonos en Internet</p>
-        </div>
-
-        <div className="stats">
-          <span>🔥 Racha: 1</span>
-          <span>💎 Gemas: 230</span>
-        </div>
-      </header>
-
-      {selectedModule ? (
-        <section className="module-detail">
-          <button className="back-button" onClick={() => setSelectedModule(null)}>
-            ← Volver al mapa
-          </button>
-          <h2>{selectedModule.icon} {selectedModule.title}</h2>
-          <p>Selecciona un nivel para comenzar tu misión.</p>
-          <div className="levels">
-            {[1, 2, 3, 4, 5].map((level) => (
-              <div className="level-card" key={level}>
-                <span>⭐</span>
-                <h3>Nivel {level}</h3>
-                <p>Próximamente</p>
+    <div className="app-shell">
+      <Header onAbout={showAbout} onLogin={showLoginScope} />
+      <main className="main-content">
+        <div className={`stage ${screen === 'welcome' ? 'welcome-stage' : 'roles-stage'}`}>
+          <section className="content" aria-live="polite">
+            {screen === 'welcome'
+              ? <WelcomePage onStart={openRoleSelection} onLogin={showLoginScope} />
+              : <RoleSelectionPage onBack={goWelcome} onRole={showScopeNotice} />}
+            {notice && (
+              <div className="scope-notice" role="status">
+                <Info size={19} aria-hidden="true" />
+                <p>{notice}</p>
+                <button type="button" onClick={() => setNotice('')} aria-label="Cerrar aviso"><X size={17} /></button>
               </div>
-            ))}
-          </div>
-        </section>
-      ) : (
-        <>
-          <section className="map-section">
-            <h2>🌟 Tu aventura comienza aquí</h2>
-            <div className="module-map">
-              {modules.map((module) => (
-                <button
-                  className="module-node"
-                  key={module.id}
-                  onClick={() => setSelectedModule(module)}
-                >
-                  <span className="module-icon">{module.icon}</span>
-                  <strong>MÓDULO {module.id}</strong>
-                  <small>{module.title}</small>
-                </button>
-              ))}
-            </div>
+            )}
           </section>
-
-          <section className="bottom-grid">
-            <div className="panel">
-              <h2>🏆 LOGROS DESBLOQUEADOS</h2>
-              <div className="achievements">
-                {achievements.map((achievement, index) => (
-                  <div className={`achievement ${index === 0 ? 'unlocked' : ''}`} key={achievement.name}>
-                    <span>{achievement.icon}</span>
-                    <small>{achievement.name}</small>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="panel">
-              <h2>🦸 MI AVATAR</h2>
-              <div className="avatar-content">
-                <div className="avatar">🧑‍🎤</div>
-                <div>
-                  <p>Personaliza tu héroe y consigue accesorios con tus gemas.</p>
-                  <button className="store-button" disabled>🛍️ Tienda próximamente</button>
-                </div>
-              </div>
-            </div>
-          </section>
-        </>
-      )}
-    </main>
+          <PipoScene welcome={screen === 'welcome'} />
+        </div>
+      </main>
+      <footer className="site-footer">
+        <span>Pequeños pasos. Grandes superpoderes.</span>
+        <span className="prototype-label"><i /> Experiencia inicial</span>
+        <span className="footer-note">Aprender también es cuidarnos.</span>
+      </footer>
+    </div>
   );
 }
-
-export default App;

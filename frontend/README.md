@@ -1,16 +1,38 @@
-# React + Vite
+# CiberHéroes – Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend independiente de React para CIB-26. Incluye la bienvenida y la selección de rol con el sistema visual aprobado. No implementa autenticación, registro, persistencia de perfiles ni llamadas de API.
 
-Currently, two official plugins are available:
+## Requisitos
+- Node.js 20 o superior (el backend del repositorio declara Node 24.x).
+- npm.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Desarrollo local
+Desde la raíz del repositorio:
+```bash
+cd frontend
+npm install
+npm run dev
+```
+Abrir http://localhost:5173.
 
-## React Compiler
+## Build de producción
+```bash
+cd frontend
+npm run build
+npm run preview
+```
+La vista previa se sirve en http://localhost:4173.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Sistema visual
+- Cian: `#00E5FF`
+- Amarillo: `#FFD54F`
+- Morado: `#7E57C2`
+- Fondo/tinta: `#14072B`
 
-## Expanding the ESLint configuration
+Nunito y Baloo 2 se cargan desde Google Fonts, con fuentes del sistema como alternativa.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Integración con Express
+En desarrollo, Vite usa el puerto `5173` y Express conserva sus rutas actuales (`/` y `/health`). No se modifica el `package.json` de la raíz ni el arranque del backend. La integración en producción y las rutas de API deben acordarse con la persona que trabaja en Express antes de conectar datos o autenticación.
+
+## Alcance intencional
+La selección de rol solo informa qué espacio eligió la persona. No crea usuarios, no solicita contraseñas, no almacena datos ni simula una sesión real.
