@@ -17,7 +17,6 @@
       "**/tests/**/*.js"
     ],
     "collectCoverageFrom": [
-      "app.js",
       "backend/src/**/*.js",
       "!backend/src/server.js",
       "!**/*.test.js"

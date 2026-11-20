@@ -1,26 +1,5 @@
-const express = require('express')
-const app = express()
-const PORT = process.env.PORT || 3000
+module.exports = require('./backend/src/app');
 
-// Endpoint principal
-app.get('/', (req, res) => {
-    res.json({
-        status: 'ok',
-        message: 'Pipeline CI/CD funcionando',
-        env: 'dev'
-    })
-})
-
-// Smoke test endpoint
-app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'healthy' })
-})
-
-/* istanbul ignore next -- server startup tested separately */
 if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`Server on port ${PORT}`)
-  })
+  require('./backend/src/server').startServer();
 }
-
-module.exports = app

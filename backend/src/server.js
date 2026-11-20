@@ -1,4 +1,3 @@
-
 require('dotenv').config();
 
 const app = require('./app');
@@ -13,7 +12,7 @@ async function startServer() {
     console.error('MongoDB no disponible:', error.message);
   }
 
-  app.listen(PORT, () => {
+  app.listen(PORT, '0.0.0.0', () => {
     console.log(`CiberHeroes API en puerto ${PORT}`);
   });
 }
