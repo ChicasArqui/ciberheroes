@@ -1,3 +1,4 @@
+
 {
   "root": true,
   "env": {
@@ -10,32 +11,34 @@
   ],
   "overrides": [
     {
-{
-  "files": ["tests/**/*.js", "backend/tests/**/*.js"],
-  "env": {
-    "jest": true
-  }
-},
-{
-  "files": ["frontend/**/*.js", "frontend/**/*.jsx"],
-  "parserOptions": {
-    "sourceType": "module",
-    "ecmaVersion": "latest"
-  },
-  "env": {
-    "node": true,
-    "es2022": true
-  }
-}
+      "files": [
+        "tests/**/*.js",
+        "backend/tests/**/*.js"
+      ],
+      "env": {
+        "jest": true
+      }
+    },
+    {
+      "files": [
+        "frontend/**/*.js",
+        "frontend/**/*.jsx"
+      ],
+      "parserOptions": {
+        "sourceType": "module",
+        "ecmaVersion": "latest"
+      },
+      "env": {
+        "browser": true,
+        "es2022": true
       }
     }
   ],
   "ignorePatterns": [
-"ignorePatterns": [
-  "**/node_modules/**",
-  "**/dist/**",
-  "coverage/",
-  "frontend-temporal/",
-  "frontend-respaldo/"
-]
+    "**/node_modules/**",
+    "**/dist/**",
+    "coverage/",
+    "frontend-temporal/",
+    "frontend-respaldo/"
+  ]
 }
