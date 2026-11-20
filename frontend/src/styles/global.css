@@ -1,3 +1,306 @@
 @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Nunito:wght@400;500;600;700;800;900&display=swap');
 :root{font-family:Nunito,sans-serif;color:#14072B;background:#FFFCF5;font-synthesis:none;text-rendering:optimizeLegibility;--cyan:#00E5FF;--yellow:#FFD54F;--purple:#7E57C2;--ink:#14072B;--muted:#685F78;--line:#E6DFF0;--soft-purple:#F0EAF9;--soft-cyan:#E5FBFF}
-*{box-sizing:border-box}html,body,#root{min-width:320px;min-height:100%;margin:0}body{min-height:100vh}button,a{font:inherit;-webkit-tap-highlight-color:transparent}button{color:inherit;cursor:pointer}button:focus-visible,a:focus-visible{outline:3px solid var(--purple);outline-offset:4px}::selection{background:var(--cyan);color:var(--ink)}.app-shell{min-height:100vh;display:flex;flex-direction:column;overflow:hidden}.site-header,.site-footer,.main-content{width:min(1280px,100%);margin:0 auto}.site-header{min-height:100px;padding:0 48px;display:flex;align-items:center;justify-content:space-between}.brand{display:inline-flex;align-items:center;gap:10px;text-decoration:none;font:700 30px/1 'Baloo 2',sans-serif;letter-spacing:-.8px}.brand>span:last-child>span{color:var(--purple)}.brand>span:last-child>i{color:var(--cyan);font-style:normal}.brand-mark{color:var(--purple);width:39px;height:39px;display:grid;place-items:center;border-radius:13px;background:var(--soft-purple)}.header-nav{display:flex;align-items:center;gap:28px}.nav-link,.nav-login{border:0;background:transparent;font-size:14px;font-weight:850}.nav-link:hover{text-decoration:underline;text-underline-offset:4px}.nav-login{display:inline-flex;gap:16px;align-items:center;border:1.5px solid var(--line);border-radius:13px;padding:11px 17px}.nav-login:hover{background:var(--soft-purple);border-color:var(--purple)}.main-content{flex:1;display:flex;align-items:center;padding:24px 48px 42px}.stage{width:100%;min-height:590px;display:grid;grid-template-columns:1fr .98fr;align-items:center;gap:54px}.content{width:100%;max-width:560px;padding:18px 0;animation:appear .3s ease both}.eyebrow{display:flex;align-items:center;gap:9px;color:var(--purple);font-size:11px;font-weight:1000;letter-spacing:.15em;margin:0 0 18px}.eyebrow>span{width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 0 4px #00E5FF25}.welcome-title,.form-title{font-family:'Baloo 2',sans-serif;font-weight:800;letter-spacing:-.035em;line-height:1.02;text-wrap:balance}.welcome-title{font-size:clamp(54px,5.4vw,76px);margin:0 0 20px}.welcome-title>span{color:var(--purple);position:relative;white-space:nowrap}.welcome-title>span:after{content:'';position:absolute;left:0;right:0;bottom:5px;height:12px;background:var(--yellow);border-radius:20px;z-index:-1;transform:rotate(-1deg)}.intro{max-width:440px;color:var(--muted);font-size:18px;line-height:1.65;margin:0 0 28px}.welcome-actions{display:flex;gap:12px;flex-wrap:wrap}.button{min-height:54px;border-radius:14px;padding:13px 22px;display:inline-flex;align-items:center;justify-content:center;gap:14px;font-weight:950;transition:transform .18s,box-shadow .18s}.button:hover{transform:translateY(-2px)}.button-primary{background:var(--purple);border:2px solid var(--purple);color:white;box-shadow:0 7px 0 #4B327C}.button-primary svg{color:var(--yellow)}.button-secondary{background:transparent;border:2px solid #CFC2E4}.button-secondary:hover{background:var(--soft-purple);border-color:var(--purple)}.welcome-note{margin:22px 0 0;display:flex;gap:8px;align-items:center;color:var(--muted);font-size:13px;font-weight:750}.welcome-note svg{color:var(--purple)}.trust-line{display:flex;gap:12px;align-items:center;margin-top:47px}.trust-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:14px;background:var(--soft-cyan);color:#087F91}.trust-line p{margin:0;color:var(--muted);font-size:13px;line-height:1.55}.trust-line strong{color:var(--ink);font-size:14px}.pipo-scene{min-height:570px;height:100%;max-height:640px;position:relative;display:flex;align-items:center;justify-content:center;isolation:isolate}.pipo-ground{position:absolute;z-index:-2;inset:28px 7px 18px;border-radius:47% 48% 39% 42%/39% 43% 46% 44%;background:#EAF1D8;transform:rotate(2deg)}.pipo-ground:after{content:'';position:absolute;right:-14px;bottom:29px;width:175px;height:130px;border-radius:50%;background:#DCEBC6;z-index:-1}.pipo-image{width:94%;height:470px;object-fit:contain;align-self:flex-end;margin-bottom:42px;position:relative;filter:drop-shadow(0 12px 12px #263E2830)}.pipo-scene.welcome .pipo-image{height:490px;width:96%;margin-bottom:28px}.pipo-shadow{position:absolute;bottom:38px;width:58%;height:22px;border-radius:50%;background:#C7D9B0;filter:blur(6px);z-index:-1}.speech{position:absolute;z-index:2;top:0;right:1%;max-width:260px;padding:20px 23px;border-radius:20px 20px 20px 5px;background:white;box-shadow:0 10px 35px #24133A12;transform:rotate(3deg);font-size:19px;font-weight:1000;line-height:1.25}.speech small{display:block;margin-top:6px;color:var(--muted);font-size:14px;font-weight:700}.scene-star{position:absolute;top:95px;left:5%;width:32px;color:#E4B735;fill:var(--yellow);transform:rotate(-13deg)}.scene-spark{position:absolute;right:0;top:210px;width:23px;color:var(--purple);fill:#D9C9F3;transform:rotate(13deg)}.pipo-name{position:absolute;right:16px;bottom:13px;padding:8px 14px;border-radius:11px;background:#FFF5D5;color:#76591A;font:700 16px 'Baloo 2',sans-serif;transform:rotate(-4deg)}.role-copy-page{max-width:550px}.back-button{display:inline-flex;align-items:center;gap:8px;margin:0 0 26px;padding:7px 0;border:0;background:none;color:var(--muted);font-size:14px;font-weight:900}.back-button:hover{color:var(--purple)}.form-title{font-size:clamp(42px,4vw,54px);margin:0 0 13px}.form-intro{max-width:440px;margin:0 0 25px;color:var(--muted);font-size:16px;line-height:1.6}.role-options{display:grid;gap:14px;margin-bottom:22px}.role-card{min-height:112px;width:100%;display:flex;align-items:center;gap:17px;padding:18px 20px;border:2px solid var(--line);border-radius:18px;background:white;text-align:left;transition:transform .18s,border-color .18s,box-shadow .18s}.role-card:hover{transform:translateX(4px);box-shadow:0 8px 22px #26163D12}.role-card.hero{border-color:#A8EDF4;background:#F4FDFF}.role-card.hero:hover{border-color:#00BFD5}.role-card.guardian:hover{border-color:var(--purple);background:#FBF9FF}.role-art{width:59px;height:59px;flex:none;display:grid;place-items:center;border-radius:17px;color:#087F91;background:#D9F8FC}.role-card.guardian .role-art{color:var(--purple);background:var(--soft-purple)}.role-copy{display:grid;gap:4px}.role-copy strong{font-size:19px;font-weight:1000}.role-copy>span{color:var(--muted);font-size:14px}.role-arrow{margin-left:auto;color:var(--purple);flex:none}.minor-note{margin:0;max-width:420px;color:var(--muted);font-size:13px;line-height:1.6}.scope-notice{display:flex;align-items:flex-start;gap:10px;margin-top:22px;padding:14px;border-radius:14px;border:1px solid #D2C2EB;background:#F5F0FC;color:#453267;font-size:13px;font-weight:750;line-height:1.5}.scope-notice>svg{flex:none;margin-top:1px}.scope-notice p{margin:0}.scope-notice button{margin-left:auto;padding:0;border:0;background:transparent;color:inherit}.site-footer{min-height:62px;padding:16px 48px 24px;display:flex;align-items:center;justify-content:space-between;gap:14px;color:var(--muted);font-size:12px;font-weight:750}.prototype-label{display:inline-flex;align-items:center;gap:7px}.prototype-label i{width:7px;height:7px;border-radius:50%;background:var(--purple);box-shadow:0 0 0 4px #7E57C220}.footer-note{color:#867C93}@keyframes appear{from{opacity:.5;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}@media(max-width:1050px){.site-header{min-height:90px;padding:0 32px}.main-content{padding:14px 32px 28px}.stage{grid-template-columns:1fr .9fr;gap:28px;min-height:550px}.welcome-title{font-size:58px}.pipo-scene{min-height:520px}.pipo-image,.pipo-scene.welcome .pipo-image{height:410px}.speech{max-width:225px;padding:17px 19px;font-size:17px}.trust-line{margin-top:30px}.site-footer{padding-inline:32px}}@media(max-width:720px){.site-header{min-height:78px;padding:0 23px}.brand{font-size:25px;gap:7px}.brand-mark{width:34px;height:34px}.header-nav{gap:0}.nav-link{display:none}.nav-login{padding:9px 12px;font-size:12px;gap:9px}.main-content{display:block;padding:9px 23px 25px}.stage{display:flex;flex-direction:column;gap:0;min-height:0;align-items:stretch}.content{max-width:520px;padding:13px 0 0}.eyebrow{font-size:10px;margin-bottom:14px}.welcome-title{font-size:clamp(47px,11vw,58px);margin-bottom:16px}.intro{max-width:420px;font-size:16px;line-height:1.55;margin-bottom:22px}.welcome-actions{gap:10px}.button{min-height:50px;padding:12px 14px;font-size:13px;gap:7px;flex:1}.welcome-note{margin-top:16px;font-size:12px}.trust-line{display:none}.pipo-scene{width:min(100%,430px);min-height:285px;height:285px;margin:28px auto 0}.pipo-ground{inset:10px 15px 0}.pipo-ground:after{width:105px;height:90px;right:0;bottom:16px}.pipo-image,.pipo-scene.welcome .pipo-image{width:85%;height:250px;margin-bottom:7px}.pipo-shadow{bottom:7px;height:14px}.speech{top:0;right:0;max-width:185px;padding:13px 15px;font-size:15px}.speech small{font-size:12px;margin-top:4px}.scene-star{top:46px;left:4%;width:25px}.scene-spark{top:135px;right:3%;width:19px}.pipo-name{bottom:-1px;right:7px;padding:5px 10px;font-size:12px}.roles-stage .pipo-scene{min-height:185px;height:185px;margin-top:24px}.roles-stage .pipo-image{width:65%;height:178px;margin:0 0 5px -65px}.roles-stage .speech{top:9px;right:0;max-width:170px}.roles-stage .scene-star,.roles-stage .scene-spark,.roles-stage .pipo-name{display:none}.roles-stage .pipo-shadow{width:38%;left:16%;bottom:6px}.back-button{margin-bottom:18px}.form-title{font-size:40px}.form-intro{font-size:15px;margin-bottom:21px}.role-card{min-height:99px;padding:15px;gap:12px}.role-art{width:51px;height:51px;border-radius:15px}.role-copy strong{font-size:17px}.role-copy>span{font-size:12px}.site-footer{padding:10px 23px 18px;flex-wrap:wrap;justify-content:space-between;font-size:10px}.site-footer>span:first-child,.footer-note{display:none}}@media(max-width:380px){.site-header,.main-content,.site-footer{padding-left:18px;padding-right:18px}.brand{font-size:23px}.nav-login{font-size:11px;padding:8px 10px}.welcome-title{font-size:45px}.welcome-actions{flex-direction:column}.button{width:100%}.speech{max-width:165px}.role-card{padding:12px;gap:9px}.role-art{width:45px;height:45px}.role-copy strong{font-size:16px}}@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
+*{box-sizing:border-box}html,body,#root{min-width:320px;min-height:100%;margin:0}body{min-height:100vh}button,a{font:inherit;-webkit-tap-highlight-color:transparent}button{color:inherit;cursor:pointer}button:focus-visible,a:focus-visible{outline:3px solid var(--purple);outline-offset:4px}::selection{background:var(--cyan);color:var(--ink)}.app-shell{min-height:100vh;display:flex;flex-direction:column;overflow:hidden}.site-header,.site-footer,.main-content{width:min(1280px,100%);margin:0 auto}.site-header{min-height:100px;padding:0 48px;display:flex;align-items:center;justify-content:space-between}.brand{display:inline-flex;align-items:center;gap:10px;text-decoration:none;font:700 30px/1 'Baloo 2',sans-serif;letter-spacing:-.8px}.brand>span:last-child>span{color:var(--purple)}.brand>span:last-child>i{color:var(--cyan);font-style:normal}.brand-mark{color:var(--purple);width:39px;height:39px;display:grid;place-items:center;border-radius:13px;background:var(--soft-purple)}.header-nav{display:flex;align-items:center;gap:28px}.nav-link,.nav-login{border:0;background:transparent;font-size:14px;font-weight:850}.nav-link:hover{text-decoration:underline;text-underline-offset:4px}.nav-login{display:inline-flex;gap:16px;align-items:center;border:1.5px solid var(--line);border-radius:13px;padding:11px 17px}.nav-login:hover{background:var(--soft-purple);border-color:var(--purple)}.main-content{flex:1;display:flex;align-items:center;padding:24px 48px 42px}.stage{width:100%;min-height:590px;display:grid;grid-template-columns:1fr .98fr;align-items:center;gap:44px}.content{width:100%;max-width:560px;padding:18px 0;animation:appear .3s ease both}.eyebrow{display:flex;align-items:center;gap:9px;color:var(--purple);font-size:11px;font-weight:1000;letter-spacing:.15em;margin:0 0 18px}.eyebrow>span{width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 0 4px #00E5FF25}.welcome-title,.form-title{font-family:'Baloo 2',sans-serif;font-weight:800;letter-spacing:-.035em;line-height:1.02;text-wrap:balance}.welcome-title{font-size:clamp(54px,5.4vw,76px);margin:0 0 20px}.welcome-title>span{color:var(--purple);position:relative;white-space:nowrap}.welcome-title>span:after{content:'';position:absolute;left:0;right:0;bottom:5px;height:12px;background:var(--yellow);border-radius:20px;z-index:-1;transform:rotate(-1deg)}.intro{max-width:440px;color:var(--muted);font-size:18px;line-height:1.65;margin:0 0 28px}.welcome-actions{display:flex;gap:12px;flex-wrap:wrap}.button{min-height:54px;border-radius:14px;padding:13px 22px;display:inline-flex;align-items:center;justify-content:center;gap:14px;font-weight:950;transition:transform .18s,box-shadow .18s}.button:hover{transform:translateY(-2px)}.button-primary{background:var(--purple);border:2px solid var(--purple);color:white;box-shadow:0 7px 0 #4B327C}.button-primary svg{color:var(--yellow)}.button-secondary{background:transparent;border:2px solid #CFC2E4}.button-secondary:hover{background:var(--soft-purple);border-color:var(--purple)}.welcome-note{margin:22px 0 0;display:flex;gap:8px;align-items:center;color:var(--muted);font-size:13px;font-weight:750}.welcome-note svg{color:var(--purple)}.trust-line{display:flex;gap:12px;align-items:center;margin-top:47px}.trust-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:14px;background:var(--soft-cyan);color:#087F91}.trust-line p{margin:0;color:var(--muted);font-size:13px;line-height:1.55}.trust-line strong{color:var(--ink);font-size:14px}.pipo-scene{min-height:570px;height:100%;max-height:640px;position:relative;display:flex;align-items:center;justify-content:center;isolation:isolate}.pipo-ground{position:absolute;z-index:-2;inset:28px 7px 18px;border-radius:47% 48% 39% 42%/39% 43% 46% 44%;background:#EAF1D8;transform:rotate(2deg)}.pipo-ground:after{content:'';position:absolute;right:-14px;bottom:29px;width:175px;height:130px;border-radius:50%;background:#DCEBC6;z-index:-1}.pipo-image{width:94%;height:470px;object-fit:contain;align-self:flex-end;margin-bottom:42px;position:relative;filter:drop-shadow(0 12px 12px #263E2830)}.pipo-scene.welcome .pipo-image{height:490px;width:96%;margin-bottom:28px}.pipo-shadow{position:absolute;bottom:38px;width:58%;height:22px;border-radius:50%;background:#C7D9B0;filter:blur(6px);z-index:-1}.speech{position:absolute;z-index:2;top:0;right:1%;max-width:260px;padding:20px 23px;border-radius:20px 20px 20px 5px;background:white;box-shadow:0 10px 35px #24133A12;transform:rotate(3deg);font-size:19px;font-weight:1000;line-height:1.25}.speech small{display:block;margin-top:6px;color:var(--muted);font-size:14px;font-weight:700}.scene-star{position:absolute;top:95px;left:5%;width:32px;color:#E4B735;fill:var(--yellow);transform:rotate(-13deg)}.scene-spark{position:absolute;right:0;top:210px;width:23px;color:var(--purple);fill:#D9C9F3;transform:rotate(13deg)}.pipo-name{position:absolute;right:16px;bottom:13px;padding:8px 14px;border-radius:11px;background:#FFF5D5;color:#76591A;font:700 16px 'Baloo 2',sans-serif;transform:rotate(-4deg)}.role-copy-page{max-width:550px}.back-button{display:inline-flex;align-items:center;gap:8px;margin:0 0 26px;padding:7px 0;border:0;background:none;color:var(--muted);font-size:14px;font-weight:900}.back-button:hover{color:var(--purple)}.form-title{font-size:clamp(42px,4vw,54px);margin:0 0 13px}.form-intro{max-width:440px;margin:0 0 25px;color:var(--muted);font-size:16px;line-height:1.6}.role-options{display:grid;gap:14px;margin-bottom:22px}.role-card{min-height:112px;width:100%;display:flex;align-items:center;gap:17px;padding:18px 20px;border:2px solid var(--line);border-radius:18px;background:white;text-align:left;transition:transform .18s,border-color .18s,box-shadow .18s}.role-card:hover{transform:translateX(4px);box-shadow:0 8px 22px #26163D12}.role-card.hero{border-color:#A8EDF4;background:#F4FDFF}.role-card.hero:hover{border-color:#00BFD5}.role-card.guardian:hover{border-color:var(--purple);background:#FBF9FF}.role-art{width:59px;height:59px;flex:none;display:grid;place-items:center;border-radius:17px;color:#087F91;background:#D9F8FC}.role-card.guardian .role-art{color:var(--purple);background:var(--soft-purple)}.role-copy{display:grid;gap:4px}.role-copy strong{font-size:19px;font-weight:1000}.role-copy>span{color:var(--muted);font-size:14px}.role-arrow{margin-left:auto;color:var(--purple);flex:none}.minor-note{margin:0;max-width:420px;color:var(--muted);font-size:13px;line-height:1.6}.scope-notice{display:flex;align-items:flex-start;gap:10px;margin-top:22px;padding:14px;border-radius:14px;border:1px solid #D2C2EB;background:#F5F0FC;color:#453267;font-size:13px;font-weight:750;line-height:1.5}.scope-notice>svg{flex:none;margin-top:1px}.scope-notice p{margin:0}.scope-notice button{margin-left:auto;padding:0;border:0;background:transparent;color:inherit}.site-footer{min-height:62px;padding:16px 48px 24px;display:flex;align-items:center;justify-content:space-between;gap:14px;color:var(--muted);font-size:12px;font-weight:750}.prototype-label{display:inline-flex;align-items:center;gap:7px}.prototype-label i{width:7px;height:7px;border-radius:50%;background:var(--purple);box-shadow:0 0 0 4px #7E57C220}.footer-note{color:#867C93}@keyframes appear{from{opacity:.5;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}@media(max-width:1050px){.site-header{min-height:90px;padding:0 32px}.main-content{padding:14px 32px 28px}.stage{grid-template-columns:1fr .9fr;gap:28px;min-height:550px}.welcome-title{font-size:58px}.pipo-scene{min-height:520px}.pipo-image,.pipo-scene.welcome .pipo-image{height:410px}.speech{max-width:225px;padding:17px 19px;font-size:17px}.trust-line{margin-top:30px}.site-footer{padding-inline:32px}}@media(max-width:720px){.site-header{min-height:78px;padding:0 23px}.brand{font-size:25px;gap:7px}.brand-mark{width:34px;height:34px}.header-nav{gap:0}.nav-link{display:none}.nav-login{padding:9px 12px;font-size:12px;gap:9px}.main-content{display:block;padding:9px 23px 25px}.stage{display:flex;flex-direction:column;gap:0;min-height:0;align-items:stretch}.content{max-width:520px;padding:13px 0 0}.eyebrow{font-size:10px;margin-bottom:14px}.welcome-title{font-size:clamp(47px,11vw,58px);margin-bottom:16px}.intro{max-width:420px;font-size:16px;line-height:1.55;margin-bottom:22px}.welcome-actions{gap:10px}.button{min-height:50px;padding:12px 14px;font-size:13px;gap:7px;flex:1}.welcome-note{margin-top:16px;font-size:12px}.trust-line{display:none}.pipo-scene{width:min(100%,430px);min-height:285px;height:285px;margin:28px auto 0}.pipo-ground{inset:10px 15px 0}.pipo-ground:after{width:105px;height:90px;right:0;bottom:16px}.pipo-image,.pipo-scene.welcome .pipo-image{width:85%;height:250px;margin-bottom:7px}.pipo-shadow{bottom:7px;height:14px}.speech{top:0;right:0;max-width:185px;padding:13px 15px;font-size:15px}.speech small{font-size:12px;margin-top:4px}.scene-star{top:46px;left:4%;width:25px}.scene-spark{top:135px;right:3%;width:19px}.pipo-name{bottom:-1px;right:7px;padding:5px 10px;font-size:12px}.roles-stage .pipo-scene{min-height:185px;height:185px;margin-top:24px}.roles-stage .pipo-image{width:65%;height:178px;margin:0 0 5px -65px}.roles-stage .speech{top:9px;right:0;max-width:170px}.roles-stage .scene-star,.roles-stage .scene-spark,.roles-stage .pipo-name{display:none}.roles-stage .pipo-shadow{width:38%;left:16%;bottom:6px}.back-button{margin-bottom:18px}.form-title{font-size:40px}.form-intro{font-size:15px;margin-bottom:21px}.role-card{min-height:99px;padding:15px;gap:12px}.role-art{width:51px;height:51px;border-radius:15px}.role-copy strong{font-size:17px}.role-copy>span{font-size:12px}.site-footer{padding:10px 23px 18px;flex-wrap:wrap;justify-content:space-between;font-size:10px}.site-footer>span:first-child,.footer-note{display:none}}@media(max-width:380px){.site-header,.main-content,.site-footer{padding-left:18px;padding-right:18px}.brand{font-size:23px}.nav-login{font-size:11px;padding:8px 10px}.welcome-title{font-size:45px}.welcome-actions{flex-direction:column}.button{width:100%}.speech{max-width:165px}.role-card{padding:12px;gap:9px}.role-art{width:45px;height:45px}.role-copy strong{font-size:16px}}@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
+/* ==========================================
+   DISEÑO RESPONSIVE PARA CELULARES
+========================================== */
+
+/* ==========================================
+   AJUSTES GENERALES: HASTA 720 PX
+========================================== */
+
+@media (max-width: 720px) {
+
+  /* Encabezado */
+  .site-header {
+    min-height: 84px;
+    padding: 8px 18px;
+    flex-wrap: wrap;
+    row-gap: 3px;
+  }
+
+  .header-nav {
+    width: 100%;
+    justify-content: flex-end;
+    gap: 14px;
+  }
+
+  .nav-link {
+    display: inline-flex;
+    font-size: 11px;
+    padding: 6px 0;
+  }
+
+  .nav-login {
+    font-size: 11px;
+    padding: 7px 10px;
+  }
+
+  /* Globo de Pipo en bienvenida */
+  .welcome-stage .speech {
+    top: -28px;
+  }
+
+  /* Selección de rol */
+  .roles-stage .content {
+    padding: 0;
+  }
+
+  .roles-stage .back-button {
+    margin-bottom: 8px;
+  }
+
+  .roles-stage .eyebrow {
+    margin-bottom: 8px;
+  }
+
+  .roles-stage .form-title {
+    font-size: 34px;
+    line-height: .98;
+    margin-bottom: 6px;
+  }
+
+  .roles-stage .form-intro {
+    font-size: 13px;
+    line-height: 1.35;
+    margin-bottom: 10px;
+  }
+
+  /* Tarjetas */
+  .roles-stage .role-options {
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .roles-stage .role-card {
+    min-height: 72px;
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .roles-stage .role-art {
+    width: 44px;
+    height: 44px;
+  }
+
+  .roles-stage .role-copy strong {
+    font-size: 15px;
+  }
+
+  .roles-stage .role-copy > span {
+    font-size: 11px;
+  }
+
+  .roles-stage .minor-note {
+    font-size: 11px;
+    line-height: 1.3;
+  }
+
+  /* Pipo en selección de rol */
+  .roles-stage .pipo-scene {
+    min-height: 250px;
+    height: 250px;
+    margin: 6px auto 0;
+  }
+
+  .roles-stage .pipo-image {
+    width: 85%;
+    height: 250px;
+    margin: 0 0 7px -35px;
+  }
+
+  .roles-stage .speech {
+    top: 0;
+    right: 0;
+    max-width: 142px;
+    padding: 9px 11px;
+    font-size: 13px;
+  }
+
+  .roles-stage .speech small {
+    font-size: 11px;
+  }
+}
+
+/* ==========================================
+   CELULARES PEQUEÑOS: HASTA 380 PX
+========================================== */
+
+@media (max-width: 380px) {
+
+  .main-content {
+    padding: 4px 18px 8px;
+  }
+
+  /* PANTALLA DE BIENVENIDA */
+
+  .welcome-stage .content {
+    padding: 2px 0 0;
+  }
+
+  .welcome-stage .eyebrow {
+    font-size: 9px;
+    margin-bottom: 8px;
+  }
+
+  .welcome-stage .welcome-title {
+    font-size: 39px;
+    line-height: .98;
+    margin-bottom: 8px;
+  }
+
+  .welcome-stage .intro {
+    font-size: 13px;
+    line-height: 1.35;
+    margin-bottom: 12px;
+  }
+
+  .welcome-stage .welcome-note {
+    margin-top: 10px;
+    font-size: 10px;
+    position: relative;
+    z-index: 3;
+  }
+
+  .welcome-stage .button {
+    min-height: 42px;
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  /* Pipo en bienvenida */
+  .welcome-stage .pipo-scene.welcome {
+    min-height: 180px;
+    height: 180px;
+    width: 100%;
+    margin: 34px auto 0;
+  }
+
+  .welcome-stage .pipo-ground {
+    inset: 6px 12px 0;
+  }
+
+  .welcome-stage .pipo-scene.welcome .pipo-image {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 185px;
+    height: 175px;
+    margin: 0;
+    object-fit: contain;
+  }
+
+  .welcome-stage .pipo-scene.welcome .speech {
+    top: -8px;
+    right: 0;
+    max-width: 135px;
+    padding: 9px 10px;
+    font-size: 12px;
+  }
+
+  .welcome-stage .speech small {
+    font-size: 10px;
+  }
+
+  .welcome-stage .pipo-name {
+    font-size: 10px;
+    padding: 5px 8px;
+  }
+
+  /* SELECCIÓN DE ROL */
+
+  .roles-stage .content {
+    padding: 4px 0 0;
+  }
+
+  .roles-stage .back-button {
+    margin-bottom: 8px;
+    font-size: 12px;
+  }
+
+  .roles-stage .eyebrow {
+    font-size: 9px;
+    margin-bottom: 8px;
+  }
+
+  .roles-stage .form-title {
+    font-size: 32px;
+    line-height: .98;
+    margin-bottom: 7px;
+  }
+
+  .roles-stage .form-intro {
+    font-size: 12px;
+    line-height: 1.35;
+    margin-bottom: 10px;
+  }
+
+  .roles-stage .role-options {
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .roles-stage .role-card {
+    min-height: 64px;
+    padding: 8px 10px;
+    gap: 9px;
+  }
+
+  .roles-stage .role-art {
+    width: 38px;
+    height: 38px;
+  }
+
+  .roles-stage .role-copy {
+    gap: 2px;
+  }
+
+  .roles-stage .role-copy strong {
+    font-size: 14px;
+  }
+
+  .roles-stage .role-copy > span {
+    font-size: 10px;
+    line-height: 1.2;
+  }
+
+  .roles-stage .minor-note {
+    font-size: 10px;
+    line-height: 1.3;
+  }
+
+  /* Pipo en selección de rol */
+  .roles-stage .pipo-scene {
+    min-height: 195px;
+    height: 195px;
+    margin: 8px auto 0;
+  }
+
+  .roles-stage .pipo-image {
+    position: absolute;
+    left: 2%;
+    bottom: 0;
+    width: 185px;
+    height: 185px;
+    margin: 0;
+    object-fit: contain;
+  }
+
+  .roles-stage .speech {
+    top: 5px;
+    right: 1%;
+    max-width: 135px;
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .roles-stage .speech small {
+    font-size: 10px;
+  }
+
+  /* Pie de página */
+  .site-footer {
+    min-height: 38px;
+    padding: 6px 18px 10px;
+  }
+}
