@@ -1,0 +1,138 @@
+
+# CIB-23 — Plan de pruebas de integración y seguridad
+
+## Objetivo
+
+Verificar que los flujos de registro, autenticación, gestión de familias y perfiles de CiberHéroes funcionen correctamente y protejan la información de los usuarios.
+
+## Alcance
+
+- Registro de Guardianes.
+- Inicio y cierre de sesión.
+- Gestión de familias.
+- Acceso a perfiles infantiles.
+- Validación de entradas.
+- Control de acceso por usuario, familia y rol.
+- Manejo seguro de errores.
+- Integración entre frontend, backend y base de datos.
+
+## Casos de prueba
+
+| ID | Escenario | Resultado esperado |
+|---|---|---|
+| TC-01 | Registrar un Guardián con datos válidos | Registro exitoso y creación de familia |
+| TC-02 | Registrar un correo duplicado | Solicitud rechazada sin duplicar usuarios |
+| TC-03 | Iniciar sesión con credenciales válidas | Sesión iniciada correctamente |
+| TC-04 | Iniciar sesión con contraseña incorrecta | Acceso denegado |
+| TC-05 | Consultar un recurso protegido sin sesión | Acceso denegado |
+| TC-06 | Acceder a información de otra familia | Acceso denegado sin revelar datos |
+| TC-07 | Modificar un perfil de otra familia | Operación rechazada |
+| TC-08 | Cerrar sesión y reutilizar la sesión anterior | Sesión invalidada |
+| TC-09 | Enviar datos inválidos o incompletos | Error controlado de validación |
+| TC-10 | Superar el límite de intentos de acceso | Se aplica la protección acordada |
+| TC-11 | Desconectar la base de datos durante una operación | Error controlado sin exponer secretos |
+| TC-12 | Recargar la aplicación después de guardar datos | Persistencia correcta en MongoDB |
+
+
+## Pruebas de seguridad del PIN temporal
+
+| ID | Endpoint | Escenario | Resultado esperado |
+|---|---|---|---|
+| PIN-01 | POST /api/child/pin/verify | PIN temporal correcto | Autoriza únicamente el cambio obligatorio |
+| PIN-02 | POST /api/child/pin/verify | PIN incorrecto | Rechaza el acceso |
+| PIN-03 | PATCH /api/child/me/profile | Intentar modificar perfil sin cambiar el PIN temporal | Acceso denegado |
+| PIN-04 | POST /api/child/pin/change | Nuevo PIN inválido | Rechaza el cambio |
+| PIN-05 | POST /api/child/pin/change | Nuevo PIN igual al temporal | Rechaza el cambio |
+| PIN-06 | POST /api/child/pin/change | Cambio válido de PIN | Actualiza el hash y habilita la sesión infantil normal |
+| PIN-07 | POST /api/child/pin/verify | Reutilizar el PIN temporal anterior | Rechaza la autenticación |
+| PIN-08 | GET /api/guardian/profiles | Consultar perfiles desde la cuenta del Guardián | No revela PIN definitivo ni hashes |
+
+## Controles de autorización
+
+- El Guardián solo puede acceder a su familia.
+- Un Guardián no puede modificar perfiles de otra familia.
+- Un CiberHéroe no puede modificar perfiles ajenos.
+- La autorización temporal del PIN solo permite cambiarlo.
+- Las operaciones protegidas requieren una sesión válida.
+- Las credenciales y los hashes no deben exponerse.
+
+## Endpoints considerados
+
+Los siguientes endpoints fueron propuestos por el equipo y están pendientes de confirmar como contrato definitivo:
+
+- POST /api/auth/register
+- POST /api/auth/login
+- POST /api/auth/logout
+- GET /api/guardian/family
+- GET /api/guardian/profiles
+- POST /api/guardian/profiles
+- POST /api/child/family/lookup
+- POST /api/child/pin/verify
+- POST /api/child/pin/change
+- PATCH /api/child/me/profile
+
+## Evidencia de pruebas ejecutadas
+
+### Pruebas automatizadas locales
+
+Herramientas: Jest y Supertest.
+
+Resultado:
+- 2 suites aprobadas.
+- 4 pruebas aprobadas.
+- 0 pruebas fallidas.
+
+Prueba de seguridad incorporada:
+- Una ruta inexistente devuelve HTTP 404.
+- La respuesta no contiene patrones habituales de trazas internas.
+
+### Análisis estático
+
+- ESLint del archivo security.test.js: aprobado.
+- ESLint del proyecto: aprobado al excluir frontend-temporal.
+- La carpeta temporal no forma parte de los commits.
+
+## Estado de implementación
+
+Completado:
+- Plan inicial de pruebas.
+- Diseño de escenarios de seguridad.
+- Primera prueba automatizada.
+- Ejecución local de Jest y ESLint.
+
+Pendiente:
+- Implementar y ejecutar pruebas de autenticación y autorización.
+- Validar el flujo completo del PIN temporal.
+- Verificar persistencia real en MongoDB.
+- Ejecutar pruebas integradas de React, Express y MongoDB.
+- Validar los controles acordados en CI.
+- Registrar evidencias de revisión cruzada del equipo.
+
+Dependencias:
+- CIB-19 a CIB-22: funcionalidades del flujo de acceso.
+- CIB-28: contrato de API.
+- CIB-29: integración MERN y CI.
+
+La ejecución DAST en Dev corresponde a CIB-24.
+
+
+## Herramientas previstas
+
+- Jest: pruebas automatizadas.
+- Supertest: pruebas de endpoints HTTP.
+- MongoDB: verificación de persistencia.
+- GitHub Actions: ejecución de pruebas en CI.
+
+## Criterios de aceptación pendientes de verificar
+
+- Los flujos válidos funcionan según los contratos acordados.
+- Los intentos de acceso no autorizado son rechazados.
+- No se exponen contraseñas, tokens ni información sensible.
+- Los errores son controlados.
+- Las pruebas automatizadas se ejecutan correctamente.
+- Los resultados quedan documentados con evidencia.
+
+
+## Estado
+
+Estado: En progreso. Se elaboró el plan de pruebas, se documentaron 20 escenarios de integración y seguridad y se implementó una prueba automatizada básica. Las pruebas integradas de autenticación, autorización y PIN temporal están pendientes de la integración de los módulos del equipo.
