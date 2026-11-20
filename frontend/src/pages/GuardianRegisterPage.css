@@ -1,0 +1,44 @@
+.guardian-register {
+  width: 100%;
+}
+
+.guardian-form {
+  display: grid;
+  gap: 16px;
+  width: min(100%, 520px);
+  margin-top: 24px;
+}
+
+.guardian-field {
+  display: grid;
+  gap: 8px;
+}
+
+.guardian-field label {
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 850;
+}
+
+.guardian-input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 56px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px;
+}
+
+.guardian-input:focus-visible {
+  border-color: var(--purple);
+  outline: 3px solid var(--soft-purple);
+}
+
+.guardian-submit {
+  width: 100%;
+  margin-top: 4px;
+}
