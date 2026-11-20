@@ -18,9 +18,9 @@ app.get('/health', (req, res) => {
 
 /* istanbul ignore next -- server startup tested separately */
 if (require.main === module) {
-    app.listen(PORT, () => {
-        console.log(`Server on port ${PORT}`)
-    })
+  app.listen(PORT, () => {
+    console.log(`Server on port ${PORT}`)
+  })
 }
 
 module.exports = app
