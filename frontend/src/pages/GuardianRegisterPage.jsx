@@ -4,6 +4,20 @@ import './GuardianRegisterPage.css';
 export default function GuardianRegisterPage() {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [passwordError, setPasswordError] = useState('');
+    const [formMessage, setFormMessage] = useState('');
+    function handleSubmit(event) {
+        event.preventDefault();
+        setPasswordError('');
+        setFormMessage('');
+
+        if(password !== confirmPassword) {
+            setPasswordError('Las contraseñas no coinciden. Revísalas e inténtalo de nuevo.');
+            return;
+        }
+
+        setFormMessage('Validación correcta.');
+    }
     return (
         <section className="guardian-register">
             <h1 className="form-title">Crea tu cuenta de Guardián para acompañar a tu
@@ -12,7 +26,7 @@ export default function GuardianRegisterPage() {
 
             <form
                 className="guardian-form"
-                onSubmit={(event) => event.preventDefault()}
+                onSubmit={handleSubmit}
             >
                 <div className="guardian-field">
                     <label htmlFor="email">Tu correo electrónico</label>
@@ -51,8 +65,15 @@ export default function GuardianRegisterPage() {
                         autoComplete="new-password"
                         value={confirmPassword}
                         onChange={(event) => setConfirmPassword(event.target.value)}
+                        aria-invalid={Boolean(passwordError)}
+                        aria-describedby={passwordError ? 'password-error' : undefined} 
                         required
                     />
+                    {passwordError && (
+                        <p id="password-error" className="guardian-error" role="alert">
+                            {passwordError}
+                        </p>
+                    )}
                 </div>
 
                 <button
@@ -61,6 +82,11 @@ export default function GuardianRegisterPage() {
                 >
                     Crear cuenta de Guardián
                 </button>
+                {formMessage && (
+                    <p className="guardian-message" role="status">
+                        {formMessage}
+                    </p>
+                )}
             </form>
         </section>
     );
