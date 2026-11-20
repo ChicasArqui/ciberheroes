@@ -28,15 +28,32 @@ describe('API de lecciones CiberHeroes', () => {
     expect(res.status).toBe(404);
   });
 
-  test('POST respuesta correcta entrega 10 XP', async () => {
-    const res = await request(app)
-      .post('/api/lecciones/1/responder')
-      .send({ questionId: 1, answer: 2 });
+  test('POST respuesta correcta no entrega XP sin progreso registrado', async () => {
+  const res = await request(app)
+    .post('/api/lecciones/1/responder')
+    .send({ questionId: 1, answer: 2 });
 
-    expect(res.status).toBe(200);
-    expect(res.body.correct).toBe(true);
-    expect(res.body.xpEarned).toBe(10);
-  });
+  expect(res.status).toBe(200);
+  expect(res.body.correct).toBe(true);
+  expect(res.body.xpEarned).toBe(0);
+});
+
+test('POST respuesta repetida no entrega XP duplicados', async () => {
+  const respuesta = { questionId: 1, answer: 2 };
+
+  const primera = await request(app)
+    .post('/api/lecciones/1/responder')
+    .send(respuesta);
+
+  const segunda = await request(app)
+    .post('/api/lecciones/1/responder')
+    .send(respuesta);
+
+  expect(primera.status).toBe(200);
+  expect(segunda.status).toBe(200);
+  expect(primera.body.xpEarned).toBe(0);
+  expect(segunda.body.xpEarned).toBe(0);
+});
 
   test('POST respuesta incorrecta entrega 0 XP', async () => {
     const res = await request(app)

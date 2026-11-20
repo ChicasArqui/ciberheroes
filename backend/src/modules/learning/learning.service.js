@@ -82,7 +82,7 @@ function answerQuestion(lessonId, questionId, answer) {
 
   return {
     correct,
-    xpEarned: correct ? 10 : 0,
+    xpEarned: 0,
     message: correct ? '¡Excelente trabajo!' : 'Intenta nuevamente'
   };
 }
