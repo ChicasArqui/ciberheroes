@@ -1,0 +1,79 @@
+.guardian-register {
+  width: 100%;
+}
+
+.guardian-form {
+  display: grid;
+  gap: 16px;
+  width: min(100%, 520px);
+  margin-top: 24px;
+}
+
+.guardian-field {
+  display: grid;
+  gap: 8px;
+}
+
+.guardian-field label {
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 850;
+}
+
+.guardian-input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 56px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px;
+}
+
+.guardian-input:focus-visible {
+  border-color: var(--purple);
+  outline: 3px solid var(--soft-purple);
+}
+
+.guardian-submit {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.guardian-hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.guardian-password-control {
+  position: relative;
+  width: 100%;
+}
+
+.guardian-password-control .guardian-input {
+  padding-right: 100px;
+}
+
+.guardian-password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  border: 0;
+  padding: 8px;
+  background: transparent;
+  color: var(--purple);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.guardian-password-toggle:focus-visible {
+  outline: 2px solid var(--purple);
+  border-radius: 6px;
+}
