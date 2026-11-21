@@ -21,8 +21,8 @@
     },
     {
       "files": [
-        "frontend/src/**/*.js",
-        "frontend/src/**/*.jsx"
+        "frontend/**/*.js",
+        "frontend/**/*.jsx"
       ],
       "plugins": [
         "react"
