@@ -14,7 +14,7 @@ export default function PipoScene({ welcome = false }) {
         alt="Pipo, nuestra tortuga verde con su pañuelo azul y escudo"
         width={1254}
         height={1254}
-        fetchPriority="high"
+        fetchpriority="high"
       />
       <span className="pipo-name">Tu compañero de aventuras</span>
     </aside>
