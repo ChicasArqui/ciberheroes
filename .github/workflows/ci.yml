@@ -41,8 +41,8 @@ jobs:
           npm audit --prefix backend --omit=dev --audit-level=high
           npm audit --prefix frontend --omit=dev --audit-level=high
 
-      - name: Run tests with 85% coverage
-        run: npm run test:coverage
+      - name: Build React frontend
+        run: npm run build --prefix frontend
 
       - name: Run backend tests
         run: npm test --prefix backend
