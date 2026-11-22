@@ -3,12 +3,25 @@
   "root": true,
   "env": {
     "node": true,
-    "es2022": true
+    "es2022": true,
+    "jest": true
   },
-  "extends": [
-    "eslint:recommended",
-    "plugin:security/recommended-legacy"
+  "parserOptions": {
+    "ecmaVersion": 2022,
+    "sourceType": "script"
+  },
+  "plugins": [
+    "security"
   ],
+  "extends": [
+    "eslint:recommended"
+  ],
+  "rules": {
+    "security/detect-object-injection": "warn",
+    "security/detect-non-literal-regexp": "warn",
+    "security/detect-unsafe-regex": "error",
+    "security/detect-eval-with-expression": "error"
+  },
   "overrides": [
     {
       "files": [
@@ -45,8 +58,10 @@
     }
   ],
   "ignorePatterns": [
-    "**/node_modules/",
-    "frontend/dist/",
-    "**/coverage/"
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/coverage/**",
+    "frontend-temporal/",
+    "frontend-respaldo/"
   ]
 }

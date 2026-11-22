@@ -88,7 +88,7 @@ CiberHéroes se desarrolla utilizando tecnologías del ecosistema JavaScript y u
 
 ### 1. Requisitos
 
-- Node.js y npm.
+- Node.js 24 y npm.
 - Git.
 - Un editor de código, como Visual Studio Code.
 - Configuración de MongoDB, según el entorno utilizado.
@@ -100,31 +100,44 @@ git clone https://github.com/ChicasArqui/ciberheroes.git
 cd ciberheroes
 ```
 
-### 3. Instalar dependencias
-
-Desde las carpetas correspondientes al frontend y backend, ejecutar:
+### 3. Instalar y compilar desde la raíz
 
 ```bash
-npm install
+npm ci
+npm ci --prefix backend
+npm ci --prefix frontend
+npm run build --prefix frontend
 ```
 
-### 4. Configurar el entorno
+### 4. Iniciar y verificar
 
-Crear los archivos de configuración necesarios tomando como referencia los ejemplos disponibles en el repositorio.
-
-No publicar credenciales, contraseñas ni cadenas privadas de conexión.
-
-### 5. Iniciar el proyecto
-
-Ejecutar en cada componente el script de desarrollo definido en su `package.json`.
-
-Por ejemplo, cuando esté disponible:
+Usa Node.js 24. Si dispones de MongoDB, configura `MONGODB_URI` como variable de entorno.
+La interfaz y las lecciones en memoria también se pueden comprobar con MongoDB desconectado.
 
 ```bash
-npm run dev
+npm start
 ```
 
-> ⚠️ Los comandos de inicio y las variables de entorno deben verificarse con la configuración de la rama que se desea ejecutar.
+Abre http://localhost:3000 y selecciona un rol. Desde otra terminal, comprueba
+la interfaz, su recurso JavaScript y los endpoints `/health` y `/api/lecciones`.
+
+```bash
+node scripts/verify-deployment.cjs http://localhost:3000
+npm run lint
+npm run lint --prefix frontend
+npm run test:coverage
+```
+
+Para probar la imagen que usa Render, detén el servidor local y ejecuta:
+
+```bash
+docker build -t ciberheroes:local .
+docker run --rm -e PORT=10000 -p 127.0.0.1:3000:10000 ciberheroes:local
+```
+
+Repite la comprobación HTTP desde otra terminal.
+
+
 ## Seguridad y enfoque educativo
 
 CiberHéroes busca promover una experiencia de aprendizaje responsable, considerando la protección de los menores como un principio fundamental.
