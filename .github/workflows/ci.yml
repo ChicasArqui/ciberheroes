@@ -26,15 +26,38 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+      
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci
 
-      - name: Run tests
-        run: npm test -- --ci --runInBand
+      - name: Install frontend dependencies
+        run: npm ci --prefix frontend
+
+      - name: Build frontend
+        run: npm run build --prefix frontend
+
+      - name: Run tests with 85% coverage
+        run: npm run test:coverage
 
       - name: Security analysis with ESLint
         run: npm run lint
 
-      - name: Verify Docker build
-        run: docker build --tag ciberheroes:ci .
+      - name: Lint React
+        run: npm run lint --prefix frontend
+
+      - name: Verify Docker image
+        run: |
+          docker build --tag ciberheroes:ci .
+          container=$(docker run --detach --publish 127.0.0.1:8080:10000 --env PORT=10000 ciberheroes:ci)
+          trap 'docker logs "$container"; docker rm -f "$container"' EXIT
+          for i in $(seq 1 10); do
+            if node scripts/verify-deployment.cjs http://127.0.0.1:8080; then
+              exit 0
+            fi
+            sleep 2
+          done
+          exit 1
 
   deploy-dev:
     name: Deploy to development
@@ -63,23 +86,22 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Verify development API
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Verify development application
         env:
           DEV_URL: https://miapp-dev-0pav.onrender.com
         run: |
           for i in $(seq 1 12); do
-            if curl --fail --silent --show-error \
-              --connect-timeout 10 --max-time 20 \
-              "${DEV_URL%/}/health" --output health.json; then
-              if jq -e '.status == "healthy"' health.json > /dev/null; then
-                echo "Development API responds with healthy status"
-                exit 0
-              fi
+            if node scripts/verify-deployment.cjs "$DEV_URL"; then
+              exit 0
             fi
-            echo "Attempt $i failed; retrying in 10 seconds"
             sleep 10
           done
-          echo "Development API did not become healthy"
           exit 1
 
   deploy-prod:
