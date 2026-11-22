@@ -26,10 +26,12 @@ describe('API CiberHeroes', () => {
     }
   });
 
-  test('GET /ruta-inexistente responde 404', async () => {
+  test('GET /ruta-inexistente responde 404 sin trazas internas', async () => {
     const response = await request(app).get('/ruta-inexistente');
 
     expect(response.statusCode).toBe(404);
+    expect(response.text).not.toMatch(/Error:\s/);
+    expect(response.text).not.toMatch(/at\s+\S+\s+\(/);
   });
 
   test('POST /health responde 404', async () => {
