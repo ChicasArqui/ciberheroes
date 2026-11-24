@@ -1,4 +1,5 @@
 const express = require('express');
+const { createFamilyLookupRateLimit } = require('./family-rate-limit');
 
 const familyCodePattern = /^[A-Za-z0-9_-]{1,64}$/;
 const parseJson = express.json({ limit: '1kb' });
@@ -23,7 +24,6 @@ function publicProfiles(profiles) {
 }
 
 function parseLookupBody(req, res, next) {
-  res.set('Cache-Control', 'no-store');
   parseJson(req, res, error => {
     if (!error) return next();
 
@@ -33,10 +33,10 @@ function parseLookupBody(req, res, next) {
 }
 
 // The repository returns eligible profiles or null if the family is missing.
-function createFamilyLookupRouter(repository) {
+function createFamilyLookupRouter(repository, rateLimit) {
   const router = express.Router();
 
-  router.post('/lookup', parseLookupBody, async (req, res) => {
+  router.post('/lookup', createFamilyLookupRateLimit(rateLimit), parseLookupBody, async (req, res) => {
     const input = req.body?.familyCode;
     const code = typeof input === 'string' ? input.trim() : '';
     if (!familyCodePattern.test(code)) {
