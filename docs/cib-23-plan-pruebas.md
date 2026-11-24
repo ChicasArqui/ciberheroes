@@ -82,8 +82,14 @@ de producción. Estas comprobaciones funcionan sin una conexión a MongoDB.
 | Ruta API inexistente | HTTP 404 y cuerpo JSON con solo el mensaje público. Se amplió la prueba existente. | `tests/test_app.js` |
 | JSON malformado al responder una lección | HTTP 400 y cuerpo JSON con solo el mensaje público, sin el contenido enviado ni detalles del parser. Cubre parte de TC-09. | `tests/test_app.js` |
 
-La ejecución de CI conserva el build de React, el lint, Jest con el umbral
-del 85 % y el smoke test de Docker definidos en `main`.
+El SHA revisado, 5186437, pasó 21 pruebas Jest en 3 suites. También superó el
+umbral de cobertura del 85 % y pasó ESLint de raíz y frontend, la compilación
+de React y el smoke test de Docker.
+[Corrida de GitHub Actions](https://github.com/ChicasArqui/ciberheroes/actions/runs/45080696555)
+
+Las 21 pruebas corresponden a la ejecución completa. Este PR amplía dos casos
+404 y agrega un caso 400. Los 20 escenarios del plan incluyen comprobaciones
+que aún no se han automatizado.
 
 ### Pendiente de automatizar
 
@@ -92,13 +98,20 @@ del 85 % y el smoke test de Docker definidos en `main`.
 - TC-11 y TC-12. Fallos de conexión y persistencia con MongoDB.
 - PIN-01 a PIN-08. Autorización temporal, cambio de PIN y protección de credenciales y hashes.
 - Integración completa de React, Express y MongoDB con los módulos del equipo.
-- Registrar la ejecución en GitHub Actions y la revisión cruzada del equipo.
+- Completar la revisión cruzada de los escenarios pendientes cuando estén disponibles las APIs.
 
 
 Dependencias:
-- CIB-19 a CIB-22: funcionalidades del flujo de acceso.
+- CIB-19 aporta el registro del Guardián, la familia y la autenticación.
+- CIB-20 aporta la gestión y el listado de perfiles para probar el aislamiento
+  entre familias y la exclusión de PIN y hashes.
+- CIB-21 aporta la búsqueda familiar y el contexto de selección del perfil.
+- CIB-22 aporta la verificación y el cambio del PIN temporal, y la autorización
+  asociada a ese flujo.
+- CIB-27 aporta la conexión a MongoDB y una prueba independiente de
+  persistencia. TC-11 y TC-12 requieren verificar las operaciones integradas.
 - CIB-28: contrato de API.
-- CIB-29: integración MERN y CI.
+- CIB-29: integración MERN y CI. La actualización de body-parser 1.20.8 del lockfile raíz se coordina en el PR #15 como corrección compartida con main.
 
 La ejecución DAST en Dev corresponde a CIB-24.
 
@@ -116,10 +129,10 @@ La ejecución DAST en Dev corresponde a CIB-24.
 - Los intentos de acceso no autorizado son rechazados.
 - No se exponen contraseñas, tokens ni información sensible.
 - Los errores son controlados.
-- Las pruebas automatizadas se ejecutan correctamente.
-- Los resultados quedan documentados con evidencia.
+- Ejecutar las pruebas automatizadas de acceso, sesión y PIN cuando se integren las APIs.
+- Documentar los resultados de los escenarios pendientes con evidencia.
 
 
 ## Estado
 
-Estado: En progreso. Se elaboró el plan de pruebas, se documentaron 20 escenarios de integración y seguridad y se automatizaron comprobaciones de errores HTTP 404 y 400. Las pruebas integradas de autenticación, autorización y PIN temporal están pendientes de la integración de los módulos del equipo.
+Estado: Avance parcial de CIB-23. Este PR deja pendiente el cierre de la tarea. Se elaboró el plan de pruebas, se documentaron 20 escenarios de integración y seguridad y se automatizaron comprobaciones de errores HTTP 404 y 400. Las pruebas integradas de autenticación, autorización y PIN temporal están pendientes de la integración de los módulos del equipo.
