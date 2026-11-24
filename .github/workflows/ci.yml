@@ -46,6 +46,9 @@ jobs:
       - name: Lint React
         run: npm run lint --prefix frontend
 
+      - name: Test family lookup frontend
+        run: npm test --prefix frontend
+
       - name: Verify Docker image
         run: |
           docker build --tag ciberheroes:ci .
