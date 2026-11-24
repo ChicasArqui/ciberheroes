@@ -1,18 +1,27 @@
 import { useEffect, useState } from 'react';
 import { Info, X } from 'lucide-react';
+import ChildAccess from './features/ChildAccess.jsx';
 import Header from './components/Header.jsx';
 import PipoScene from './components/PipoScene.jsx';
 import WelcomePage from './pages/WelcomePage.jsx';
 import RoleSelectionPage from './pages/RoleSelectionPage.jsx';
 
+function getScreen() {
+  switch (window.location.hash) {
+    case '#roles': return 'roles';
+    case '#familia': return 'family';
+    default: return 'welcome';
+  }
+}
+
 export default function App() {
-  const [screen, setScreen] = useState(window.location.hash === '#roles' ? 'roles' : 'welcome');
+  const [screen, setScreen] = useState(getScreen);
   const [notice, setNotice] = useState('');
 
   useEffect(() => {
     const handlePopState = () => {
       setNotice('');
-      setScreen(window.location.hash === '#roles' ? 'roles' : 'welcome');
+      setScreen(getScreen());
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
@@ -30,13 +39,33 @@ export default function App() {
     window.history.pushState({ screen: 'welcome' }, '', '#inicio');
   };
 
-  const showScopeNotice = (role) => {
-    const roleName = role === 'hero' ? 'CiberHéroe' : 'Guardián';
-    setNotice(`Has elegido el espacio de ${roleName}. La siguiente pantalla se integrará en una tarea posterior.`);
+  const chooseRole = (role) => {
+    if (role === 'hero') {
+      setNotice('');
+      setScreen('family');
+      window.history.pushState({ screen: 'family', fromRoles: true }, '', '#familia');
+      return;
+    }
+
+    setNotice('Has elegido el espacio de Guardián. La siguiente pantalla se integrará en una tarea posterior.');
+  };
+
+  const changeRole = () => {
+    if (window.history.state?.fromRoles) {
+      window.history.back();
+      return;
+    }
+    setNotice('');
+    setScreen('roles');
+    window.history.replaceState({ screen: 'roles' }, '', '#roles');
   };
 
   const showAbout = () => setNotice('CiberHéroes es una experiencia educativa para niñas y niños de 8 a 13 años, acompañada por un adulto de confianza.');
   const showLoginScope = () => setNotice('El inicio de sesión se integrará cuando esté listo el backend. En esta entrega solo preparamos la bienvenida y la selección de rol.');
+
+  if (screen === 'family') {
+    return <ChildAccess onChangeRole={changeRole} />;
+  }
 
   return (
     <div className="app-shell">
@@ -46,7 +75,7 @@ export default function App() {
           <section className="content" aria-live="polite">
             {screen === 'welcome'
               ? <WelcomePage onStart={openRoleSelection} onLogin={showLoginScope} />
-              : <RoleSelectionPage onBack={goWelcome} onRole={showScopeNotice} />}
+              : <RoleSelectionPage onBack={goWelcome} onRole={chooseRole} />}
             {notice && (
               <div className="scope-notice" role="status">
                 <Info size={19} aria-hidden="true" />
