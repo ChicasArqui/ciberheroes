@@ -1,12 +1,11 @@
 # CIB-21 · Búsqueda familiar
 
 El frontend envía `POST /api/child/family/lookup` al mismo origen con un cuerpo
-JSON `{ "familyCode": "EQUIPO" }`. Estos formatos se usan para desarrollar y
-probar la interfaz y quedan pendientes de confirmación con el equipo de backend.
+JSON `{ "familyCode": "EQUIPO" }`. El campo público acordado es `avatarId`. Los demás puntos marcados como provisionales siguen pendientes de confirmación.
 
 | Caso | Interpretación provisional del cliente |
 | --- | --- |
-| Familia con perfiles | HTTP 2xx con `{ "profiles": [{ "id": "kid-1", "nickname": "Luna", "avatar": "⭐" }] }`. El ID debe ser una cadena no vacía o un entero seguro y ser único. El apodo debe ser una cadena no vacía. El avatar es texto opcional. |
+| Familia con perfiles | HTTP 2xx con `{ "profiles": [{ "id": "kid-1", "nickname": "Luna", "avatarId": "tortuga-01" }] }`. El ID debe ser una cadena no vacía o un entero seguro y ser único. El apodo debe ser una cadena no vacía. `avatarId` es un identificador de texto opcional. El cliente resuelve los identificadores predefinidos localmente. `tortuga-01` muestra 🐢 y los valores ausentes o desconocidos muestran 🦸. |
 | Familia sin perfiles | HTTP 2xx con `{ "profiles": [] }`. |
 | Código inexistente | Propuesta: HTTP 404 con `{ "code": "FAMILY_NOT_FOUND" }`. Un 404 genérico de Express también aparece cuando la ruta falta, así que no se interpreta como familia inexistente. |
 | Error del servicio | HTTP 5xx u otro estado de error sin significado acordado para CIB-21. |
@@ -15,7 +14,7 @@ probar la interfaz y quedan pendientes de confirmación con el equipo de backend
 
 Confirmar con backend los estados HTTP exactos, el discriminador de familia
 inexistente, el formato y la normalización del código familiar, los tipos de ID
-y avatar, y si se necesita distinguir otros estados, como HTTP 400 o 429.
+y el catálogo de `avatarId`, y si se necesita distinguir otros estados, como HTTP 400 o 429.
 Los datos del ejemplo son ficticios.
 
 Para ejecutar las pruebas con respuestas simuladas:
@@ -34,7 +33,7 @@ se inyecta un repositorio; las pruebas usan dobles de prueba.
 El repositorio implementa `findProfilesByFamilyCode(code)` y devuelve un
 arreglo con los perfiles elegibles de esa familia, o `null` si no existe.
 Un arreglo vacío significa que existe, pero no tiene perfiles elegibles. La
-ruta proyecta únicamente `id`, `nickname` y, si es texto, `avatar`. El
+ruta proyecta únicamente `id`, `nickname` y, si es texto no vacío, `avatarId`. El campo heredado `avatar` se omite. El
 repositorio futuro también debe consultar solo los campos necesarios.
 
 Como política provisional, la ruta acepta JSON de hasta 1 KiB y un código de
@@ -51,7 +50,7 @@ Antes de activar datos reales:
   tratamiento de códigos deshabilitados. Una respuesta distinta para familias
   inexistentes, vacías y con perfiles permite inferir su existencia.
 - CIB-20 debe confirmar el vínculo familia-perfil, qué perfiles se consideran
-  elegibles y el formato de ID, apodo y avatar. La selección no autentica al
+  elegibles y el formato de ID, apodo y el catálogo de `avatarId`. La selección no autentica al
   menor y la verificación del PIN corresponde a CIB-22.
 - Aplicar límites de intentos compartidos entre instancias, por origen y con
   un presupuesto global. Acordar cuotas y ventanas con el equipo, devolver

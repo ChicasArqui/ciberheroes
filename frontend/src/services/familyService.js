@@ -26,7 +26,7 @@ function parseProfiles(data) {
   const seenIds = new Set();
 
   return data.profiles.map(profile => {
-    const { id, nickname, avatar } = profile ?? {};
+    const { id, nickname, avatarId } = profile ?? {};
     if ((!isNonBlankString(id) && !Number.isSafeInteger(id)) || !isNonBlankString(nickname)) {
       throw new FamilyLookupError('malformed');
     }
@@ -41,7 +41,7 @@ function parseProfiles(data) {
     return {
       id: normalizedId,
       nickname: nickname.trim(),
-      avatar: isNonBlankString(avatar) ? avatar.trim() : undefined
+      avatarId: isNonBlankString(avatarId) ? avatarId.trim() : undefined
     };
   });
 }

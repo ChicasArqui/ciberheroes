@@ -5,8 +5,8 @@ import App from '../src/App.jsx';
 import ChildAccess from '../src/features/ChildAccess.jsx';
 
 const fixture = document.getElementById('fixture');
-const luna = { id: 'fixture-luna', nickname: 'Luna', avatar: '⭐' };
-const sol = { id: 'fixture-sol', nickname: 'Sol', avatar: '☀️' };
+const luna = { id: 'fixture-luna', nickname: 'Luna', avatarId: 'tortuga-01' };
+const sol = { id: 'fixture-sol', nickname: 'Sol', avatarId: 'sol-no-registrado' };
 
 const originalFetch = globalThis.fetch;
 let root;
@@ -192,4 +192,22 @@ test('Limpia el código, los perfiles y la selección al cambiar de familia', as
   check(fixture.querySelectorAll('.child-profile-card').length === 1, 'No se reemplazó la lista anterior.');
   check(button('Sol').getAttribute('aria-pressed') === 'false', 'Se restauró una selección de la familia anterior.');
   check(!fixture.querySelector('[role="status"]'), 'Quedó el mensaje de selección anterior.');
+});
+
+test('Muestra avatares del catálogo y conserva el icono por defecto para los demás', async () => {
+  globalThis.fetch = async () => found(
+    luna,
+    sol,
+    { id: 'fixture-mar', nickname: 'Mar' },
+    { id: 'fixture-luz', nickname: 'Luz', avatarId: 'https://example.invalid/imagen.png' }
+  );
+  await render(<ChildAccess />);
+  await search('equipo');
+
+  check(button('Luna').querySelector('.child-profile-avatar').textContent === '🐢', 'Falta el avatar local de tortuga.');
+  for (const nickname of ['Sol', 'Mar', 'Luz']) {
+    const avatar = button(nickname).querySelector('.child-profile-avatar');
+    check(avatar.textContent === '🦸' && !avatar.querySelector('img'),
+      'El avatar no reconocido debe usar el icono por defecto.');
+  }
 });

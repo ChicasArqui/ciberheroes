@@ -12,7 +12,7 @@ function lookupWith(findProfilesByFamilyCode) {
 }
 
 test('normalizes a valid code and returns eligible profiles without caching', async () => {
-  const profiles = [{ id: 'kid-1', nickname: 'Luna', avatar: '⭐' }, { id: 2, nickname: 'Sol' }];
+  const profiles = [{ id: 'kid-1', nickname: 'Luna', avatarId: 'tortuga-01' }, { id: 2, nickname: 'Sol' }];
   const lookup = jest.fn().mockResolvedValue(profiles);
 
   await lookupWith(lookup).send({ familyCode: ' equipo-1 ' })
@@ -58,13 +58,13 @@ test('keeps a family without eligible profiles distinct from a missing family', 
 
 test('returns only explicitly projected public profile fields', async () => {
   const lookup = jest.fn().mockResolvedValue([{
-    id: ' kid-1 ', nickname: ' Luna ', avatar: { privateData: 'ficticio' },
+    id: ' kid-1 ', nickname: ' Luna ', avatarId: ' tortuga-01 ', avatar: 'campo-anterior',
     pin: '0000', pinHash: 'hash-ficticio', password: 'clave-ficticia',
     guardian: { email: 'guardian@example.invalid' }, familyCode: 'EQUIPO'
   }]);
 
   await lookupWith(lookup).send({ familyCode: 'EQUIPO' })
-    .expect(200, { profiles: [{ id: 'kid-1', nickname: 'Luna' }] });
+    .expect(200, { profiles: [{ id: 'kid-1', nickname: 'Luna', avatarId: 'tortuga-01' }] });
 });
 
 test('does not expose repository error details', async () => {
@@ -89,4 +89,20 @@ test('returns unavailable when the real app has no family repository', async () 
   await request(app).post(endpoint).send({ familyCode: 'EQUIPO' })
     .expect('Cache-Control', 'no-store')
     .expect(503, { code: 'FAMILY_LOOKUP_UNAVAILABLE' });
+});
+
+test('omits invalid avatar IDs and never returns the legacy avatar field', async () => {
+  const lookup = jest.fn().mockResolvedValue([
+    { id: 'kid-1', nickname: 'Luna', avatarId: { privateData: 'ficticio' } },
+    { id: 'kid-2', nickname: 'Sol', avatar: '⭐' },
+    { id: 'kid-3', nickname: 'Mar', avatarId: '  ' }
+  ]);
+
+  await lookupWith(lookup).send({ familyCode: 'EQUIPO' }).expect(200, {
+    profiles: [
+      { id: 'kid-1', nickname: 'Luna' },
+      { id: 'kid-2', nickname: 'Sol' },
+      { id: 'kid-3', nickname: 'Mar' }
+    ]
+  });
 });

@@ -6,7 +6,7 @@ const parseJson = express.json({ limit: '1kb' });
 
 function publicProfiles(profiles) {
   const seenIds = new Set();
-  return profiles.map(({ id, nickname, avatar }) => {
+  return profiles.map(({ id, nickname, avatarId }) => {
     const publicId = typeof id === 'string' ? id.trim() : id;
     const publicNickname = typeof nickname === 'string' ? nickname.trim() : '';
     if (!((typeof publicId === 'string' && publicId) || Number.isSafeInteger(publicId))
@@ -16,8 +16,8 @@ function publicProfiles(profiles) {
 
     seenIds.add(String(publicId));
     const profile = { id: publicId, nickname: publicNickname };
-    if (typeof avatar === 'string' && avatar.trim()) {
-      profile.avatar = avatar.trim();
+    if (typeof avatarId === 'string' && avatarId.trim()) {
+      profile.avatarId = avatarId.trim();
     }
     return profile;
   });

@@ -2,6 +2,8 @@ import pipo from '../assets/pipo.jpeg';
 import '../styles/ChildAccess.css';
 import './ChildProfileSelection.css';
 
+const avatarIcons = new Map([['tortuga-01', '🐢']]);
+
 export default function ChildProfileSelection({
   profiles,
   selectedProfile,
@@ -56,7 +58,7 @@ export default function ChildProfileSelection({
                   onClick={() => onSelect(profile)}
                 >
                   <span className="child-profile-avatar" aria-hidden="true">
-                    {profile.avatar || '🦸'}
+                    {avatarIcons.get(profile.avatarId) ?? '🦸'}
                   </span>
                   <span>{profile.nickname}</span>
                 </button>
