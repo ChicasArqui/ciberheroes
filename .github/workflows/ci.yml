@@ -1,4 +1,3 @@
-
 name: CI/CD CiberHeroes
 
 on:
@@ -6,11 +5,18 @@ on:
     branches:
       - "**"
   pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   test-build:
     name: Tests, lint, security and Docker
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout repository
@@ -44,17 +50,14 @@ jobs:
       - name: Build React frontend
         run: npm run build --prefix frontend
 
-      - name: Run backend tests
-        run: npm test --prefix backend
+      - name: Run root and backend tests with 85% coverage
+        run: npm run test:coverage
 
       - name: Security analysis with ESLint
         run: npm run lint
 
       - name: Lint React
         run: npm run lint --prefix frontend
-
-      - name: Build React frontend
-        run: npm run build --prefix frontend
 
       - name: Verify Docker image
         run: |
@@ -81,6 +84,7 @@ jobs:
     needs: test-build
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     steps:
       - name: Trigger Render development deploy
@@ -98,8 +102,17 @@ jobs:
 
   smoke-test:
     name: Verify development deployment
-    needs: deploy-dev
+    needs: [test-build, deploy-dev]
+    if: >-
+      always() &&
+      needs.test-build.result == 'success' &&
+      github.ref == 'refs/heads/main' &&
+      (
+        needs.deploy-dev.result == 'success' ||
+        (github.event_name == 'workflow_dispatch' && needs.deploy-dev.result == 'skipped')
+      )
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - name: Checkout repository
@@ -115,10 +128,32 @@ jobs:
           DEV_URL: https://miapp-dev-0pav.onrender.com
         run: |
           for i in $(seq 1 12); do
-            if node scripts/verify-deployment.cjs "$DEV_URL"; then
+            if node scripts/verify-deployment.cjs "$DEV_URL" --require-database; then
               exit 0
             fi
             sleep 10
           done
 
           exit 1
+
+  deploy-prod:
+    name: Deploy to production
+    needs: [test-build, smoke-test]
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: production
+
+    steps:
+      - name: Trigger Render production deploy
+        env:
+          RENDER_PROD_HOOK: ${{ secrets.RENDER_PROD_HOOK }}
+        run: |
+          if [ -z "$RENDER_PROD_HOOK" ]; then
+            echo "Missing production environment secret RENDER_PROD_HOOK"
+            exit 1
+          fi
+
+          curl --fail --silent --show-error --max-time 60 \
+            --request POST "$RENDER_PROD_HOOK" \
+            --output /dev/null

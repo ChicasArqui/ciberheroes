@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Info, X } from 'lucide-react';
+import { getHealth } from './services/api.js';
 import Header from './components/Header.jsx';
 import PipoScene from './components/PipoScene.jsx';
 import WelcomePage from './pages/WelcomePage.jsx';
@@ -8,6 +9,25 @@ import RoleSelectionPage from './pages/RoleSelectionPage.jsx';
 export default function App() {
   const [screen, setScreen] = useState(window.location.hash === '#roles' ? 'roles' : 'welcome');
   const [notice, setNotice] = useState('');
+  const [serviceStatus, setServiceStatus] = useState({
+    server: 'checking',
+    database: 'checking',
+  });
+
+  useEffect(() => {
+    let active = true;
+    getHealth()
+      .then((health) => {
+        if (active) setServiceStatus(health);
+      })
+      .catch(() => {
+        if (active) setServiceStatus({ server: 'unavailable', database: 'unknown' });
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     const handlePopState = () => {
@@ -60,6 +80,11 @@ export default function App() {
       </main>
       <footer className="site-footer">
         <span>Pequeños pasos. Grandes superpoderes.</span>
+        <span className="service-status" aria-live="polite">
+          API: {serviceStatus.server === 'running' ? 'conectada' : serviceStatus.server === 'checking' ? 'comprobando' : 'no disponible'}
+          {' · '}
+          MongoDB: {serviceStatus.database === 'connected' ? 'conectada' : serviceStatus.database === 'disconnected' ? 'desconectada' : 'sin verificar'}
+        </span>
         <span className="prototype-label"><i /> Experiencia inicial</span>
         <span className="footer-note">Aprender también es cuidarnos.</span>
       </footer>
