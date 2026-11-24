@@ -2,10 +2,12 @@ const express = require('express');
 const path = require('node:path');
 const { getDatabaseStatus } = require('./config/database');
 const learningRoutes = require('./modules/learning/learning.routes');
+const createFamilyLookupRouter = require('./modules/family/family.routes');
 
 const app = express();
 const frontendDist = path.resolve(__dirname, '../../frontend/dist');
 
+app.use('/api/child/family', createFamilyLookupRouter());
 app.use(express.json());
 app.use('/api/lecciones', learningRoutes);
 
