@@ -1,6 +1,6 @@
 import { Star } from 'lucide-react';
 
-export default function PipoScene({ welcome = false }) {
+export default function PipoScene({ welcome = false, imageSrc = '/assets/pipo-saludo.png' }) {
   return (
     <aside className={`pipo-scene${welcome ? ' welcome' : ''}`} aria-label="Pipo, tu compañero de aventuras">
       <div className="pipo-ground" />
@@ -10,7 +10,7 @@ export default function PipoScene({ welcome = false }) {
       <div className="pipo-shadow" />
       <img
         className="pipo-image"
-        src="/assets/pipo-saludo.png"
+        src={imageSrc}
         alt="Pipo, nuestra tortuga verde con su pañuelo azul y escudo"
         width={1254}
         height={1254}
