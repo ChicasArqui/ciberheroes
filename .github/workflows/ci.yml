@@ -1,43 +1,56 @@
-name: CI Pipeline
+name: CI/CD CiberHeroes
 
 on:
   push:
-    branches: ['**']
+    branches:
+      - "**"
   pull_request:
-    branches: [main]
+    branches:
+      - main
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  test:
-    name: Tests + security analysis
+  test-build:
+    name: Tests, lint, security and Docker
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
+
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Configure Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: "24"
           cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            backend/package-lock.json
+            frontend/package-lock.json
 
-      - name: Install dependencies
+      - name: Install root dependencies
         run: npm ci
-      
+
       - name: Install backend dependencies
-        working-directory: backend
-        run: npm ci
+        run: npm ci --prefix backend
 
       - name: Install frontend dependencies
         run: npm ci --prefix frontend
 
-      - name: Build frontend
+      - name: Audit production dependencies
+        run: |
+          npm audit --omit=dev --audit-level=high
+          npm audit --prefix backend --omit=dev --audit-level=high
+          npm audit --prefix frontend --omit=dev --audit-level=high
+
+      - name: Build React frontend
         run: npm run build --prefix frontend
 
-      - name: Run tests with 85% coverage
+      - name: Run root and backend tests with 85% coverage
         run: npm run test:coverage
 
       - name: Security analysis with ESLint
@@ -49,22 +62,30 @@ jobs:
       - name: Verify Docker image
         run: |
           docker build --tag ciberheroes:ci .
-          container=$(docker run --detach --publish 127.0.0.1:8080:10000 --env PORT=10000 ciberheroes:ci)
+
+          container=$(docker run --detach \
+            --publish 127.0.0.1:8080:10000 \
+            --env PORT=10000 \
+            ciberheroes:ci)
+
           trap 'docker logs "$container"; docker rm -f "$container"' EXIT
+
           for i in $(seq 1 10); do
             if node scripts/verify-deployment.cjs http://127.0.0.1:8080; then
               exit 0
             fi
             sleep 2
           done
+
           exit 1
 
   deploy-dev:
     name: Deploy to development
-    needs: test
+    needs: test-build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
     steps:
       - name: Trigger Render development deploy
         env:
@@ -74,50 +95,66 @@ jobs:
             echo "Missing repository secret RENDER_DEV_HOOK"
             exit 1
           fi
-          curl --fail --silent --show-error --max-time 60 \
-            --request POST "$RENDER_DEV_HOOK" --output /dev/null
 
-      - name: Wait for Render startup
-        run: sleep 30
+          curl --fail --silent --show-error --max-time 60 \
+            --request POST "$RENDER_DEV_HOOK" \
+            --output /dev/null
 
   smoke-test:
-    name: Development health check
-    needs: deploy-dev
+    name: Verify development deployment
+    needs: [test-build, deploy-dev]
+    if: >-
+      always() &&
+      needs.test-build.result == 'success' &&
+      github.ref == 'refs/heads/main' &&
+      (
+        needs.deploy-dev.result == 'success' ||
+        (github.event_name == 'workflow_dispatch' && needs.deploy-dev.result == 'skipped')
+      )
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: "24"
 
       - name: Verify development application
         env:
           DEV_URL: https://miapp-dev-0pav.onrender.com
+          EXPECTED_COMMIT: ${{ github.sha }}
         run: |
           for i in $(seq 1 12); do
-            if node scripts/verify-deployment.cjs "$DEV_URL"; then
+            if node scripts/verify-deployment.cjs "$DEV_URL" --require-database; then
               exit 0
             fi
             sleep 10
           done
+
           exit 1
 
   deploy-prod:
     name: Deploy to production
-    needs: smoke-test
+    needs: [test-build, smoke-test]
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment: production
+
     steps:
       - name: Trigger Render production deploy
         env:
           RENDER_PROD_HOOK: ${{ secrets.RENDER_PROD_HOOK }}
         run: |
           if [ -z "$RENDER_PROD_HOOK" ]; then
-            echo "Missing repository secret RENDER_PROD_HOOK"
+            echo "Missing production environment secret RENDER_PROD_HOOK"
             exit 1
           fi
+
           curl --fail --silent --show-error --max-time 60 \
-            --request POST "$RENDER_PROD_HOOK" --output /dev/null
+            --request POST "$RENDER_PROD_HOOK" \
+            --output /dev/null

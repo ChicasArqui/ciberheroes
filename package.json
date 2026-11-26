@@ -9,13 +9,14 @@
     "start": "node server.js",
     "test": "jest",
     "test:coverage": "jest --coverage --ci --runInBand",
-    "lint": "eslint . --ext .js --max-warnings=0"
+    "lint": "eslint . --ext .js,.jsx --max-warnings=0"
   },
   "jest": {
     "testEnvironment": "node",
     "testMatch": [
       "**/tests/**/*.js"
     ],
+    "collectCoverage": true,
     "collectCoverageFrom": [
       "backend/src/**/*.js",
       "!backend/src/server.js",
@@ -36,6 +37,7 @@
   },
   "devDependencies": {
     "eslint": "^8.55.0",
+    "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-security": "^2.1.0",
     "jest": "^30.5.2",
     "supertest": "^7.1.3"

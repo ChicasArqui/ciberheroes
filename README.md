@@ -91,7 +91,8 @@ CiberHéroes se desarrolla utilizando tecnologías del ecosistema JavaScript y u
 - Node.js 24 y npm.
 - Git.
 - Un editor de código, como Visual Studio Code.
-- Configuración de MongoDB, según el entorno utilizado.
+- MongoDB para verificar la conexión completa; la interfaz y las lecciones en memoria también funcionan si no está conectado.
+- Docker (opcional, para probar la imagen de producción).
 
 ### 2. Clonar el repositorio
 
@@ -100,42 +101,99 @@ git clone https://github.com/ChicasArqui/ciberheroes.git
 cd ciberheroes
 ```
 
-### 3. Instalar y compilar desde la raíz
+### 3. Instalar dependencias y configurar entorno
+
+Instala las dependencias de la raíz, del backend y del frontend:
 
 ```bash
 npm ci
 npm ci --prefix backend
 npm ci --prefix frontend
-npm run build --prefix frontend
 ```
 
-### 4. Iniciar y verificar
+Para conectar MongoDB en local, crea `backend/.env` tomando como base `backend/.env.example` (define `PORT=3000` y `MONGODB_URI=mongodb://127.0.0.1:27017/ciberheroes`). El backend carga este archivo tanto al iniciarlo desde la raíz como desde `backend/`. No agregues `.env` al repositorio.
 
-Usa Node.js 24. Si dispones de MongoDB, configura `MONGODB_URI` como variable de entorno.
-La interfaz y las lecciones en memoria también se pueden comprobar con MongoDB desconectado.
+### 4. Build y ejecución en local
+
+#### Opción A: Modo integrado (backend sirviendo el build de React)
+
+Compila el frontend y levanta el servidor Express desde la raíz:
 
 ```bash
+npm run build --prefix frontend
 npm start
 ```
 
-Abre http://localhost:3000 y selecciona un rol. Desde otra terminal, comprueba
-la interfaz, su recurso JavaScript y los endpoints `/health` y `/api/lecciones`.
+También puedes iniciar el backend directamente desde su carpeta con `npm start --prefix backend`. Luego abre <http://localhost:3000>.
+
+#### Opción B: Modo desarrollo separado (frontend + backend)
+
+En una terminal inicia el backend con recarga automática:
 
 ```bash
-node scripts/verify-deployment.cjs http://localhost:3000
-npm run lint
-npm run lint --prefix frontend
-npm run test:coverage
+npm run dev --prefix backend
 ```
 
-Para probar la imagen que usa Render, detén el servidor local y ejecuta:
+En otra terminal inicia el servidor de desarrollo de Vite para el frontend:
+
+```bash
+npm run dev --prefix frontend
+```
+
+Vite muestra el estado de la API y MongoDB en el pie de página. Las rutas `/health` y `/api` se reenvían al backend en `http://127.0.0.1:3000`.
+
+### 5. Build y ejecución con Docker
+
+Para construir y ejecutar la imagen Docker (la misma que se valida en CI y despliega en Render):
 
 ```bash
 docker build -t ciberheroes:local .
 docker run --rm -e PORT=10000 -p 127.0.0.1:3000:10000 ciberheroes:local
 ```
 
-Repite la comprobación HTTP desde otra terminal.
+### 6. Tests, cobertura, linting y verificación
+
+Ejecuta los tests completos (raíz + backend) exigiendo el umbral mínimo de cobertura del 85%:
+
+```bash
+npm run test:coverage
+```
+
+Para ejecutar únicamente los tests del backend:
+
+```bash
+npm test --prefix backend
+```
+
+Para ejecutar el análisis de estilo y seguridad (ESLint / SAST) y la auditoría de dependencias:
+
+```bash
+npm run lint
+npm run lint --prefix frontend
+npm audit --omit=dev --audit-level=high
+npm audit --prefix backend --omit=dev --audit-level=high
+npm audit --prefix frontend --omit=dev --audit-level=high
+```
+
+Con el servidor local o el contenedor Docker levantado en el puerto `3000`, puedes verificar los endpoints `/`, `/health`, `/api/lecciones` y los assets compilados desde otra terminal:
+
+```bash
+node scripts/verify-deployment.cjs http://localhost:3000
+```
+
+Para exigir que MongoDB también esté conectado (como en Dev), agrega `--require-database`:
+
+```bash
+node scripts/verify-deployment.cjs http://localhost:3000 --require-database
+```
+
+### 7. Despliegues
+
+El workflow despliega a Dev automáticamente después de las comprobaciones en `main` y falla si el smoke test no confirma que MongoDB está conectado. Prod solo se puede solicitar manualmente desde Actions en `main`; el job utiliza el Environment `production`.
+
+En Render Dev, configura `MONGODB_URI` como variable privada del servicio y permite la conexión desde Atlas. Render asigna `PORT`; no agregues credenciales ni URI al repositorio ni a los logs.
+
+Para exigir aprobación antes de que se ejecute el job, una persona administradora debe configurar en GitHub **Settings → Environments → production → Required reviewers** y guardar `RENDER_PROD_HOOK` como secreto de ese Environment (no como secreto general del repositorio). La protección del Environment es una configuración de GitHub y debe verificarse allí; el archivo del workflow por sí solo no puede imponerla.
 
 
 ## Seguridad y enfoque educativo

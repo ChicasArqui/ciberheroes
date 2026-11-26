@@ -1,9 +1,12 @@
-
 {
   "root": true,
   "env": {
     "node": true,
     "es2022": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2022,
+    "sourceType": "script"
   },
   "extends": [
     "eslint:recommended",
@@ -24,20 +27,30 @@
         "frontend/**/*.js",
         "frontend/**/*.jsx"
       ],
-      "parserOptions": {
-        "sourceType": "module",
-        "ecmaVersion": "latest"
-      },
+      "plugins": [
+        "react"
+      ],
       "env": {
         "browser": true,
         "es2022": true
+      },
+      "parserOptions": {
+        "ecmaVersion": 2022,
+        "sourceType": "module",
+        "ecmaFeatures": {
+          "jsx": true
+        }
+      },
+      "rules": {
+        "react/jsx-uses-react": "error",
+        "react/jsx-uses-vars": "error"
       }
     }
   ],
   "ignorePatterns": [
     "**/node_modules/**",
     "**/dist/**",
-    "coverage/",
+    "**/coverage/**",
     "frontend-temporal/",
     "frontend-respaldo/"
   ]

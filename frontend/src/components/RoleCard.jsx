@@ -1,12 +1,8 @@
 import { ArrowUpRight, ShieldCheck, UsersRound } from 'lucide-react';
 
-const roleIcons = {
-  hero: ShieldCheck,
-  guardian: UsersRound,
-};
 
 export default function RoleCard({ type, title, description, onClick }) {
-  const Icon = roleIcons[type];
+  const Icon = type === 'guardian' ? UsersRound : ShieldCheck;
   return (
     <button className={`role-card ${type}`} type="button" onClick={onClick}>
       <span className="role-art"><Icon size={31} strokeWidth={2.1} /></span>

@@ -9,7 +9,7 @@ async function get(baseUrl, path, contentType) {
   return response;
 }
 
-async function verify(baseUrl) {
+async function verify(baseUrl, { requireDatabase = false } = {}) {
   const home = await get(baseUrl, '/', /text\/html/);
   const html = await home.text();
   assert.match(html, /<div id="root"><\/div>/);
@@ -24,6 +24,13 @@ async function verify(baseUrl) {
   const health = await healthResponse.json();
   assert.equal(health.status, 'healthy');
   assert.equal(health.server, 'running');
+  if (process.env.EXPECTED_COMMIT) {
+    assert.equal(health.commit, process.env.EXPECTED_COMMIT, 'Deployment commit does not match this workflow run');
+  }
+  assert.match(health.database || '', /^(connected|disconnected)$/);
+  if (requireDatabase) {
+    assert.equal(health.database, 'connected', 'MongoDB must be connected in Dev');
+  }
 
   const lessonsResponse = await get(baseUrl, '/api/lecciones', /application\/json/);
   const lessons = await lessonsResponse.json();
@@ -32,7 +39,9 @@ async function verify(baseUrl) {
   console.log('React, /health and /api/lecciones responded successfully.');
 }
 
-verify(process.argv[2]).catch(error => {
+verify(process.argv[2], {
+  requireDatabase: process.argv.includes('--require-database')
+}).catch(error => {
   console.error(error);
   process.exitCode = 1;
 });
