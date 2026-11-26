@@ -11,8 +11,8 @@ async function expectLookupError(kind) {
 }
 
 test('sends a same-origin request and returns only public profile fields', async t => {
-  const fetchMock = mockJson(t, { profiles: [{ id: ' kid-1 ', nickname: ' Luna ', avatarId: ' tortuga-01 ', avatar: '⭐', extra: 'unused' }] });
-  assert.deepEqual(await lookupFamily('EQUIPO'), [{ id: 'kid-1', nickname: 'Luna', avatarId: 'tortuga-01' }]);
+  const fetchMock = mockJson(t, { profiles: [{ id: ' kid-1 ', nickname: ' Luna ', avatarId: ' zorro ', avatar: '⭐', extra: 'unused' }] });
+  assert.deepEqual(await lookupFamily('EQUIPO'), [{ id: 'kid-1', nickname: 'Luna', avatarId: 'zorro' }]);
   const [[url, options]] = fetchMock.mock.calls.map(call => call.arguments);
   assert.equal(url, '/api/child/family/lookup');
   assert.equal(options.method, 'POST');

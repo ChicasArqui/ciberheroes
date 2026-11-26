@@ -15,7 +15,10 @@ JSON `{ "familyCode": "EQUIPO" }`. El campo público acordado es `avatarId`. Los
 Confirmar con backend los estados HTTP exactos, el discriminador de familia
 inexistente, el formato y la normalización del código familiar, los tipos de ID
 y el catálogo de `avatarId`, y si se necesita distinguir otros estados, como HTTP 400 o 429.
-Los datos del ejemplo son ficticios.
+Los datos del ejemplo son ficticios. La selección infantil reconoce los IDs
+`zorro`, `gati`, `can`, `cone`, `pingui`, `buho`, `mapache`, `koala`
+y `leon` de CIB-20 mediante emojis fijos provisionales. También conserva
+`tortuga-01`. Los IDs se usan como claves del catálogo local, nunca como URLs.
 
 Para ejecutar las pruebas con respuestas simuladas:
 

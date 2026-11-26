@@ -2,7 +2,18 @@ import pipo from '../assets/pipo.jpeg';
 import '../styles/ChildAccess.css';
 import './ChildProfileSelection.css';
 
-const avatarIcons = new Map([['tortuga-01', '🐢']]);
+const avatarIcons = new Map([
+  ['tortuga-01', '🐢'],
+  ['zorro', '🦊'],
+  ['gati', '🐱'],
+  ['can', '🐶'],
+  ['cone', '🐰'],
+  ['pingui', '🐧'],
+  ['buho', '🦉'],
+  ['mapache', '🦝'],
+  ['koala', '🐨'],
+  ['leon', '🦁']
+]);
 
 export default function ChildProfileSelection({
   profiles,

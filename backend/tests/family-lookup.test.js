@@ -58,13 +58,13 @@ test('keeps a family without eligible profiles distinct from a missing family', 
 
 test('returns only explicitly projected public profile fields', async () => {
   const lookup = jest.fn().mockResolvedValue([{
-    id: ' kid-1 ', nickname: ' Luna ', avatarId: ' tortuga-01 ', avatar: 'campo-anterior',
+    id: ' kid-1 ', nickname: ' Luna ', avatarId: ' zorro ', avatar: 'campo-anterior',
     pin: '0000', pinHash: 'hash-ficticio', password: 'clave-ficticia',
     guardian: { email: 'guardian@example.invalid' }, familyCode: 'EQUIPO'
   }]);
 
   await lookupWith(lookup).send({ familyCode: 'EQUIPO' })
-    .expect(200, { profiles: [{ id: 'kid-1', nickname: 'Luna', avatarId: 'tortuga-01' }] });
+    .expect(200, { profiles: [{ id: 'kid-1', nickname: 'Luna', avatarId: 'zorro' }] });
 });
 
 test('does not expose repository error details', async () => {

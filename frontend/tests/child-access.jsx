@@ -6,7 +6,7 @@ import ChildAccess from '../src/features/ChildAccess.jsx';
 
 const fixture = document.getElementById('fixture');
 const luna = { id: 'fixture-luna', nickname: 'Luna', avatarId: 'tortuga-01' };
-const sol = { id: 'fixture-sol', nickname: 'Sol', avatarId: 'sol-no-registrado' };
+const sol = { id: 'fixture-sol', nickname: 'Sol', avatarId: 'zorro' };
 
 const originalFetch = globalThis.fetch;
 let root;
@@ -198,6 +198,7 @@ test('Muestra avatares del catálogo y conserva el icono por defecto para los de
   globalThis.fetch = async () => found(
     luna,
     sol,
+    { id: 'fixture-otro', nickname: 'Otro', avatarId: 'desconocido' },
     { id: 'fixture-mar', nickname: 'Mar' },
     { id: 'fixture-luz', nickname: 'Luz', avatarId: 'https://example.invalid/imagen.png' }
   );
@@ -205,7 +206,8 @@ test('Muestra avatares del catálogo y conserva el icono por defecto para los de
   await search('equipo');
 
   check(button('Luna').querySelector('.child-profile-avatar').textContent === '🐢', 'Falta el avatar local de tortuga.');
-  for (const nickname of ['Sol', 'Mar', 'Luz']) {
+  check(button('Sol').querySelector('.child-profile-avatar').textContent === '🦊', 'Falta el avatar local de zorro.');
+  for (const nickname of ['Otro', 'Mar', 'Luz']) {
     const avatar = button(nickname).querySelector('.child-profile-avatar');
     check(avatar.textContent === '🦸' && !avatar.querySelector('img'),
       'El avatar no reconocido debe usar el icono por defecto.');
