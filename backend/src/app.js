@@ -13,6 +13,7 @@ app.get('/health', (req, res) => {
   res.status(200).json({
     status: 'healthy',
     server: 'running',
+    commit: process.env.RENDER_GIT_COMMIT || 'local',
     database: getDatabaseStatus()
   });
 });

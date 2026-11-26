@@ -126,6 +126,7 @@ jobs:
       - name: Verify development application
         env:
           DEV_URL: https://miapp-dev-0pav.onrender.com
+          EXPECTED_COMMIT: ${{ github.sha }}
         run: |
           for i in $(seq 1 12); do
             if node scripts/verify-deployment.cjs "$DEV_URL" --require-database; then

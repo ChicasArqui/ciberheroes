@@ -12,6 +12,7 @@ describe('API CiberHeroes', () => {
     expect(response.body).toEqual({
       status: 'healthy',
       server: 'running',
+      commit: process.env.RENDER_GIT_COMMIT || 'local',
       database: expect.stringMatching(/^(connected|disconnected)$/)
     });
   });

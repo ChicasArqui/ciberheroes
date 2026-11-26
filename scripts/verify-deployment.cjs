@@ -24,6 +24,9 @@ async function verify(baseUrl, { requireDatabase = false } = {}) {
   const health = await healthResponse.json();
   assert.equal(health.status, 'healthy');
   assert.equal(health.server, 'running');
+  if (process.env.EXPECTED_COMMIT) {
+    assert.equal(health.commit, process.env.EXPECTED_COMMIT, 'Deployment commit does not match this workflow run');
+  }
   assert.match(health.database || '', /^(connected|disconnected)$/);
   if (requireDatabase) {
     assert.equal(health.database, 'connected', 'MongoDB must be connected in Dev');
