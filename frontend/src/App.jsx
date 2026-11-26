@@ -6,11 +6,13 @@ import PipoScene from './components/PipoScene.jsx';
 import WelcomePage from './pages/WelcomePage.jsx';
 import RoleSelectionPage from './pages/RoleSelectionPage.jsx';
 import GuardianRegisterPage from './pages/GuardianRegisterPage.jsx';
+import GuardianLoginPage from './pages/GuardianLoginPage.jsx';
 
 function getScreenFromHash() {
-    if (window.location.hash === '#roles') return 'roles';
-    if (window.location.hash === '#guardian-register') return 'guardian-register';
-    return 'welcome';
+  if (window.location.hash === '#roles') return 'roles';
+  if (window.location.hash === '#guardian-register') return 'guardian-register';
+  if (window.location.hash === '#guardian-login') return 'guardian-login';
+  return 'welcome';
 }
 export default function App() {
   const [screen, setScreen] = useState(getScreenFromHash);
@@ -56,32 +58,53 @@ export default function App() {
     window.history.pushState({ screen: 'welcome' }, '', '#inicio');
   };
 
-  const showScopeNotice = (role) => {
-  if (role === 'guardian') {
+  const openGuardianRegister = () => {
     setNotice('');
     setScreen('guardian-register');
-    window.history.pushState({ screen: 'guardian-register' }, '', '#guardian-register');
-    return;
-  }
+    window.history.pushState(
+      { screen: 'guardian-register' },
+      '',
+      '#guardian-register'
+    );
+  };
 
-  setNotice('El acceso de CiberHéroe se integrará en una tarea posterior.');
-};
+  const openGuardianLogin = () => {
+    setNotice('');
+    setScreen('guardian-login');
+    window.history.pushState(
+      { screen: 'guardian-login' },
+      '',
+      '#guardian-login'
+    );
+  };
 
-  const showAbout = () => setNotice('CiberHéroes es una experiencia educativa para niñas y niños de 8 a 13 años, acompañada por un adulto de confianza.');
-  const showLoginScope = () => setNotice('El inicio de sesión se integrará cuando esté listo el backend. En esta entrega solo preparamos la bienvenida y la selección de rol.');
+  const showScopeNotice = (role) => {
+    if (role === 'guardian') {
+      openGuardianRegister();
+      return;
+    }
+
+    setNotice('El acceso de CiberHéroe se integrará en una tarea posterior.');
+  };
+
+  const showAbout = () => setNotice(
+    'CiberHéroes es una experiencia educativa para niñas y niños de 8 a 13 años, acompañada por un adulto de confianza.'
+  );
 
   return (
     <div className="app-shell">
-      <Header onAbout={showAbout} onLogin={showLoginScope} />
+      <Header onAbout={showAbout} onLogin={openGuardianLogin} />
       <main className="main-content">
         <div className={`stage ${screen === 'welcome' ? 'welcome-stage' : 'roles-stage'}`}>
           <section className="content" aria-live="polite">
             {screen === 'welcome' ? (
-              <WelcomePage onStart={openRoleSelection} onLogin={showLoginScope} />
+              <WelcomePage onStart={openRoleSelection} onLogin={openGuardianLogin} />
             ) : screen === 'roles' ? (
               <RoleSelectionPage onBack={goWelcome} onRole={showScopeNotice} />
-            ) : (
+            ) : screen === 'guardian-register' ? (
               <GuardianRegisterPage />
+            ) : (
+              <GuardianLoginPage onRegister={openGuardianRegister} />
             )}
             {notice && (
               <div className="scope-notice" role="status">

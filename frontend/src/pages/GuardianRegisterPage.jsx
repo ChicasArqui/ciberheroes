@@ -1,4 +1,8 @@
 import { useState } from 'react';
+import {
+    registerGuardian,
+    getGuardianFamily
+} from '../services/api.js';
 import './GuardianRegisterPage.css';
 
 export default function GuardianRegisterPage() {
@@ -9,11 +13,15 @@ export default function GuardianRegisterPage() {
     const [passwordError, setPasswordError] = useState('');
     const [passwordPolicyError, setPasswordPolicyError] = useState('');
     const [formMessage, setFormMessage] = useState('');
-    function handleSubmit(event) {
+    const [email, setEmail] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [familyCode, setFamilyCode] = useState('');
+    async function handleSubmit(event) {
         event.preventDefault();
         setPasswordError('');
         setFormMessage('');
         setPasswordPolicyError('');
+        setFamilyCode('');
 
         const hasUppercase = /[A-Z]/.test(password);
         const hasLowercase = /[a-z]/.test(password);
@@ -25,13 +33,42 @@ export default function GuardianRegisterPage() {
             );
             return;
         }
-
+        // eslint-disable-next-line security/detect-possible-timing-attacks -- Comparación local del formulario; la verificación real de credenciales ocurre en el backend.
         if (password !== confirmPassword) {
-            setPasswordError('Las contraseñas no coinciden. Revísalas e inténtalo de nuevo.');
+            setPasswordError(
+                'Las contraseñas no coinciden. Revísalas e inténtalo de nuevo.'
+            );
             return;
         }
 
-        setFormMessage('Validación correcta.');
+        setIsSubmitting(true);
+
+        try {
+            await registerGuardian({ email, password });
+        } catch (error) {
+            if (error.code === 'EMAIL_ALREADY_EXISTS') {
+                setFormMessage('Ya existe una cuenta con ese correo.');
+            } else if (error.code === 'INVALID_INPUT') {
+                setFormMessage('Revisa el correo y los requisitos de contraseña.');
+            } else {
+                setFormMessage('No pudimos crear la cuenta. Inténtalo más tarde.');
+            }
+
+            setIsSubmitting(false);
+            return;
+        }
+
+        try {
+            const family = await getGuardianFamily();
+            setFamilyCode(family.familyCode);
+            setFormMessage('¡Cuenta creada! Guarda este código familiar:');
+        } catch {
+            setFormMessage(
+                'La cuenta se creó, pero no pudimos cargar el código. Inicia sesión para consultarlo.'
+            );
+        } finally {
+            setIsSubmitting(false);
+        }
     }
     return (
         <section className="guardian-register">
@@ -51,6 +88,8 @@ export default function GuardianRegisterPage() {
                         name="email"
                         type="email"
                         autoComplete="email"
+                        value={email}
+                        onChange={(event) => setEmail(event.target.value)}
                         required
                     />
                 </div>
@@ -138,12 +177,18 @@ export default function GuardianRegisterPage() {
                 <button
                     className="button button-primary guardian-submit"
                     type="submit"
+                    disabled={isSubmitting}
                 >
-                    Crear cuenta de Guardián
+                    {isSubmitting ? 'Creando cuenta…' : 'Crear cuenta de Guardián'}
                 </button>
                 {formMessage && (
                     <p className="guardian-message" role="status">
                         {formMessage}
+                    </p>
+                )}
+                {familyCode && (
+                    <p className="guardian-message" role="status">
+                        Código familiar: <strong>{familyCode}</strong>
                     </p>
                 )}
             </form>
