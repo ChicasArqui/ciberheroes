@@ -4,6 +4,10 @@
     "node": true,
     "es2022": true
   },
+  "parserOptions": {
+    "ecmaVersion": 2022,
+    "sourceType": "script"
+  },
   "extends": [
     "eslint:recommended",
     "plugin:security/recommended-legacy"
@@ -11,24 +15,43 @@
   "overrides": [
     {
       "files": [
-        "frontend/**/*.js"
-      ],
-      "parserOptions": {
-        "ecmaVersion": 2022,
-        "sourceType": "module"
-      }
-    },
-    {
-      "files": [
-        "tests/**/*.js"
+        "tests/**/*.js",
+        "backend/tests/**/*.js"
       ],
       "env": {
         "jest": true
       }
+    },
+    {
+      "files": [
+        "frontend/**/*.js",
+        "frontend/**/*.jsx"
+      ],
+      "plugins": [
+        "react"
+      ],
+      "env": {
+        "browser": true,
+        "es2022": true
+      },
+      "parserOptions": {
+        "ecmaVersion": 2022,
+        "sourceType": "module",
+        "ecmaFeatures": {
+          "jsx": true
+        }
+      },
+      "rules": {
+        "react/jsx-uses-react": "error",
+        "react/jsx-uses-vars": "error"
+      }
     }
   ],
   "ignorePatterns": [
-    "node_modules/",
-    "coverage/"
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/coverage/**",
+    "frontend-temporal/",
+    "frontend-respaldo/"
   ]
 }

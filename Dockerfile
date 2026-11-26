@@ -1,14 +1,20 @@
-FROM node:24-slim
+FROM node:24-slim AS frontend-build
 
-WORKDIR /app
+WORKDIR /app/frontend
+COPY frontend/package*.json ./
+RUN npm ci
+COPY frontend/ ./
+RUN npm run build
 
-# Copiar dependencias primero (cache de Docker)
-COPY package*.json ./
+FROM node:24-slim AS runtime
+
+ENV NODE_ENV=production
+WORKDIR /app/backend
+COPY backend/package*.json ./
 RUN npm ci --omit=dev
+COPY backend/src/ ./src/
+COPY --from=frontend-build /app/frontend/dist /app/frontend/dist
 
-# Copiar el resto del código
-COPY . .
-
+USER node
 EXPOSE 3000
-
-CMD ["node", "app.js"]
+CMD ["node", "src/server.js"]
