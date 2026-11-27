@@ -1,0 +1,94 @@
+name: OWASP ZAP Baseline
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  baseline:
+    name: Passive scan of isolated CiberHeroes
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      APP_IMAGE: ciberheroes:zap
+      ZAP_IMAGE: ghcr.io/zaproxy/zaproxy:stable
+      SCAN_NETWORK: ciberheroes-zap
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Build application and pull scanner
+        run: |
+          docker build --tag "$APP_IMAGE" .
+          docker pull "$ZAP_IMAGE"
+
+      - name: Start isolated application
+        run: |
+          docker network create --internal "$SCAN_NETWORK"
+          docker run --detach --name ciberheroes-zap-app \
+            --network "$SCAN_NETWORK" --network-alias app \
+            --env PORT=10000 "$APP_IMAGE"
+
+      - name: Verify application from the scan network
+        timeout-minutes: 2
+        run: |
+          for attempt in {1..10}; do
+            if docker run --rm --network "$SCAN_NETWORK" \
+              --mount "type=bind,source=$GITHUB_WORKSPACE/scripts/verify-deployment.cjs,target=/tmp/verify-deployment.cjs,readonly" \
+              --entrypoint node "$APP_IMAGE" \
+              /tmp/verify-deployment.cjs http://app:10000; then
+              exit 0
+            fi
+            sleep 2
+          done
+          exit 1
+
+      - name: Run ZAP Baseline
+        id: scan
+        timeout-minutes: 8
+        run: |
+          # The scanner writes reports as its own non-root container user.
+          REPORT_DIR="$RUNNER_TEMP/ciberheroes-zap-reports"
+          install -d -m 0777 "$REPORT_DIR"
+          # ZAP exit codes: 0 success, 1 FAIL, 2 WARN without FAIL, 3 scan error.
+          # Keep Docker and ZAP failures visible while uploading any reports.
+          docker run --name ciberheroes-zap-scanner --network "$SCAN_NETWORK" \
+            --mount "type=bind,source=$REPORT_DIR,target=/zap/wrk" \
+            "$ZAP_IMAGE" zap-baseline.py -t http://app:10000 -m 1 -T 5 \
+            -r zap-report.html -J zap-report.json
+
+      - name: Clean up scan containers and network
+        if: always()
+        run: |
+          for container in ciberheroes-zap-scanner ciberheroes-zap-app; do
+            if docker container inspect "$container" >/dev/null 2>&1; then
+              docker rm --force "$container"
+            fi
+          done
+          if docker network inspect "$SCAN_NETWORK" >/dev/null 2>&1; then
+            docker network rm "$SCAN_NETWORK"
+          fi
+
+      - name: Upload ZAP reports
+        if: ${{ always() && (steps.scan.outcome == 'success' || steps.scan.outcome == 'failure') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-baseline-reports
+          path: |
+            ${{ runner.temp }}/ciberheroes-zap-reports/zap-report.html
+            ${{ runner.temp }}/ciberheroes-zap-reports/zap-report.json
+          if-no-files-found: error
+
+      - name: Verify both reports were generated
+        if: ${{ always() && (steps.scan.outcome == 'success' || steps.scan.outcome == 'failure') }}
+        run: |
+          REPORT_DIR="$RUNNER_TEMP/ciberheroes-zap-reports"
+          test -s "$REPORT_DIR/zap-report.html"
+          node -e 'JSON.parse(require("node:fs").readFileSync(process.argv[1], "utf8"))' "$REPORT_DIR/zap-report.json"
