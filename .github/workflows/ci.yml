@@ -13,8 +13,25 @@ permissions:
   contents: read
 
 jobs:
+  sast:
+    name: CodeQL SAST
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    permissions:
+      contents: read
+      security-events: write
+    uses: ./.github/workflows/codeql.yml
+
   test-build:
     name: Tests, lint, security and Docker
+    needs: sast
+    if: >-
+      ${{
+        !cancelled() &&
+        (
+          needs.sast.result == 'success' ||
+          (github.ref != 'refs/heads/main' && needs.sast.result == 'skipped')
+        )
+      }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -98,7 +115,7 @@ jobs:
 
   deploy-dev:
     name: Deploy to development
-    needs: test-build
+    needs: [sast, test-build]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -119,15 +136,18 @@ jobs:
 
   smoke-test:
     name: Verify development deployment
-    needs: [test-build, deploy-dev]
+    needs: [sast, test-build, deploy-dev]
     if: >-
-      always() &&
-      needs.test-build.result == 'success' &&
-      github.ref == 'refs/heads/main' &&
-      (
-        needs.deploy-dev.result == 'success' ||
-        (github.event_name == 'workflow_dispatch' && needs.deploy-dev.result == 'skipped')
-      )
+      ${{
+        !cancelled() &&
+        github.ref == 'refs/heads/main' &&
+        needs.sast.result == 'success' &&
+        needs.test-build.result == 'success' &&
+        (
+          (github.event_name == 'push' && needs.deploy-dev.result == 'success') ||
+          (github.event_name == 'workflow_dispatch' && needs.deploy-dev.result == 'skipped')
+        )
+      }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -154,24 +174,42 @@ jobs:
 
           exit 1
 
+  dast:
+    name: OWASP ZAP Baseline
+    needs: smoke-test
+    if: needs.smoke-test.result == 'success'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/zap-baseline.yml
+
   deploy-prod:
     name: Deploy to production
-    needs: [test-build, smoke-test]
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    needs: [sast, test-build, smoke-test, dast]
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      github.ref == 'refs/heads/main' &&
+      needs.sast.result == 'success' &&
+      needs.test-build.result == 'success' &&
+      needs.smoke-test.result == 'success' &&
+      needs.dast.result == 'success'
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 12
     environment: production
 
     steps:
-      - name: Trigger Render production deploy
+      - name: Checkout validated commit
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Deploy and verify the validated SHA
         env:
           RENDER_PROD_HOOK: ${{ secrets.RENDER_PROD_HOOK }}
-        run: |
-          if [ -z "$RENDER_PROD_HOOK" ]; then
-            echo "Missing production environment secret RENDER_PROD_HOOK"
-            exit 1
-          fi
-
-          curl --fail --silent --show-error --max-time 60 \
-            --request POST "$RENDER_PROD_HOOK" \
-            --output /dev/null
+          RENDER_PROD_URL: ${{ vars.RENDER_PROD_URL }}
+        run: node scripts/deploy-production.cjs
