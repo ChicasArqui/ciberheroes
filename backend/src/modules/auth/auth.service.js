@@ -11,6 +11,10 @@ const {
 } = require('./password.service');
 const { generateFamilyCode } = require('../profiles/family-code.service');
 
+// Valor público con formato válido: obliga a ejecutar el mismo scrypt cuando
+// no existe la cuenta. Nunca autentica sin un Guardián encontrado en MongoDB.
+const DUMMY_PASSWORD_HASH = `scrypt$1$${Buffer.alloc(16).toString('base64url')}$${Buffer.alloc(64).toString('base64url')}`;
+
 function createRegistrationError(code) {
   const error = new Error(code);
   error.code = code;
@@ -97,10 +101,8 @@ async function loginGuardian({ email, password } = {}) {
     email: normalizedEmail
   }).select('+passwordHash');
 
-  if (
-    !guardian ||
-    !(await verifyPassword(password, guardian.passwordHash))
-  ) {
+  const passwordMatches = await verifyPassword(password, guardian?.passwordHash || DUMMY_PASSWORD_HASH);
+  if (!guardian || !passwordMatches) {
     throw createRegistrationError('INVALID_CREDENTIALS');
   }
 

@@ -15,6 +15,11 @@ function createApp({ sessionMiddleware, authRateLimiters = createAuthRateLimiter
     app.set('trust proxy', 1);
   }
 
+  // Incluye respuestas correctas, errores y fallos del parser de estas rutas.
+  app.use(['/api/auth', '/api/guardian'], (req, res, next) => {
+    res.set('Cache-Control', 'no-store');
+    next();
+  });
   app.use(express.json());
 
   if (sessionMiddleware) {

@@ -107,7 +107,7 @@ describe('POST /api/auth/register', () => {
     expect(savedGuardianId).toBeUndefined();
   });
 
-  test('responde 500 si falla la creación de la sesión', async () => {
+  test('confirma la cuenta creada y pide login si falla la creación de la sesión', async () => {
     regenerateError = new Error('fallo de prueba');
     registerGuardian.mockResolvedValue({
       guardian: {
@@ -123,14 +123,17 @@ describe('POST /api/auth/register', () => {
         password: 'ClaveSegura123!abc'
       });
 
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(201);
     expect(response.body).toEqual({
-      error: 'INTERNAL_SERVER_ERROR'
+      guardian: { id: 'guardian-test-1', email: 'guardian@example.com' },
+      sessionCreated: false
     });
+    expect(response.headers['set-cookie'].join(';')).toContain('Expires=Thu, 01 Jan 1970');
+    expect(response.headers['cache-control']).toBe('no-store');
     expect(savedGuardianId).toBeUndefined();
   });
 
-  test('responde 500 si falla el guardado de la sesión', async () => {
+  test('confirma la cuenta creada y pide login si falla el guardado de la sesión', async () => {
     saveError = new Error('fallo de prueba');
     registerGuardian.mockResolvedValue({
       guardian: {
@@ -146,9 +149,10 @@ describe('POST /api/auth/register', () => {
         password: 'ClaveSegura123!abc'
       });
 
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(201);
     expect(response.body).toEqual({
-      error: 'INTERNAL_SERVER_ERROR'
+      guardian: { id: 'guardian-test-1', email: 'guardian@example.com' },
+      sessionCreated: false
     });
     expect(savedGuardianId).toBe('guardian-test-1');
   });

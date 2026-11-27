@@ -49,6 +49,19 @@ ilimitadas y no exige alojar la aplicación en Cloudflare.
 
 ## Validación y fallos
 
+Antes de escuchar peticiones, el servidor espera la creación explícita de los
+índices únicos de correo y código familiar, también con `autoIndex` desactivado.
+Si un índice falla, no se aceptan registros. El login ejecuta `scrypt` una vez tanto
+para un correo inexistente como para una contraseña incorrecta de una cuenta
+existente; ambos casos responden `INVALID_CREDENTIALS`. Esto elimina la salida
+rápida por cuenta inexistente, sin prometer tiempos de red idénticos.
+
+Todas las respuestas de `/api/auth` y `/api/guardian`, incluidos sus errores,
+llevan `Cache-Control: no-store`. Si el registro persiste cuenta y familia pero
+falla la sesión automática, devuelve `201` con `sessionCreated: false`, descarta
+la sesión incompleta y borra la cookie. La interfaz confirma que la cuenta existe
+y permite ir al login, sin ofrecer repetir el registro.
+
 El backend valida el token en Siteverify con un tiempo máximo de ocho segundos.
 Exige el hostname configurado, la acción `guardian-login` y un contexto HMAC que
 vincula el token al correo y la IP. Además reserva atómicamente el token en MongoDB

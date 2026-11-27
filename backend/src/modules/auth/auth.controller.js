@@ -3,24 +3,31 @@ const {
   loginGuardian
 } = require('./auth.service');
 
+function registrationWithoutSession(req, res, result) {
+  clearGuardianCookie(res);
+  const complete = () => {
+    // Evitar que express-session vuelva a guardar una sesión incompleta al responder.
+    req.session = null;
+    return res.status(201).json({ ...result, sessionCreated: false });
+  };
+  if (req.session?.destroy) return req.session.destroy(complete);
+  return complete();
+}
+
 async function registerGuardianController(req, res) {
   try {
     const result = await registerGuardian(req.body);
 
     req.session.regenerate((sessionError) => {
       if (sessionError) {
-        return res.status(500).json({
-          error: 'INTERNAL_SERVER_ERROR'
-        });
+        return registrationWithoutSession(req, res, result);
       }
 
       req.session.guardianId = result.guardian.id;
 
       req.session.save((saveError) => {
         if (saveError) {
-          return res.status(500).json({
-            error: 'INTERNAL_SERVER_ERROR'
-          });
+          return registrationWithoutSession(req, res, result);
         }
 
         return res.status(201).json(result);

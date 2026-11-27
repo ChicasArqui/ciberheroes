@@ -5,11 +5,13 @@ jest.mock('mongoose', () => ({
 jest.mock('../src/modules/auth/guardian.model', () => ({
   exists: jest.fn(),
   create: jest.fn(),
+  createIndexes: jest.fn(),
   findOne: jest.fn()
 }));
 
 jest.mock('../src/modules/profiles/family.model', () => ({
-  create: jest.fn()
+  create: jest.fn(),
+  createIndexes: jest.fn()
 }));
 
 jest.mock('../src/modules/auth/password.service', () => ({
@@ -27,6 +29,7 @@ const Family = require('../src/modules/profiles/family.model');
 const { generateFamilyCode } = require('../src/modules/profiles/family-code.service');
 const { hashPassword, verifyPassword } = require('../src/modules/auth/password.service');
 const { registerGuardian, loginGuardian } = require('../src/modules/auth/auth.service');
+const { ensureAuthIndexes } = require('../src/modules/auth/auth-indexes');
 
 describe('registerGuardian', () => {
   beforeEach(() => {
@@ -265,7 +268,14 @@ describe('loginGuardian', () => {
       })
     ).rejects.toMatchObject({ code: 'INVALID_CREDENTIALS' });
 
-    expect(verifyPassword).not.toHaveBeenCalled();
+    expect(verifyPassword).toHaveBeenCalledTimes(1);
+    const dummyHash = verifyPassword.mock.calls[0][1];
+    expect(dummyHash).toMatch(/^scrypt\$1\$/);
+    const [, , salt, key] = dummyHash.split('$');
+    expect(Buffer.from(salt, 'base64url')).toHaveLength(16);
+    expect(Buffer.from(key, 'base64url')).toHaveLength(64);
+    const realVerify = jest.requireActual('../src/modules/auth/password.service').verifyPassword;
+    await expect(realVerify('ClaveSegura123!abc', dummyHash)).resolves.toBe(false);
   });
 
   test('rechaza una contraseña incorrecta', async () => {
@@ -311,5 +321,29 @@ describe('loginGuardian', () => {
       .rejects.toMatchObject({ code: 'INVALID_INPUT' });
 
     expect(Guardian.findOne).not.toHaveBeenCalled();
+  });
+});
+
+describe('índices previos al registro', () => {
+  beforeEach(() => jest.resetAllMocks());
+
+  test('espera ambos índices antes de completar la preparación', async () => {
+    let finishGuardian;
+    Guardian.createIndexes.mockImplementation(() => new Promise(resolve => { finishGuardian = resolve; }));
+    Family.createIndexes.mockResolvedValue(undefined);
+    const complete = jest.fn();
+    const preparation = ensureAuthIndexes().then(complete);
+    await Promise.resolve();
+    expect(Family.createIndexes).toHaveBeenCalledTimes(1);
+    expect(complete).not.toHaveBeenCalled();
+    finishGuardian();
+    await preparation;
+    expect(complete).toHaveBeenCalledTimes(1);
+  });
+
+  test('un fallo de índice impide completar la preparación', async () => {
+    Guardian.createIndexes.mockRejectedValue(new Error('índice duplicado ficticio'));
+    Family.createIndexes.mockResolvedValue(undefined);
+    await expect(ensureAuthIndexes()).rejects.toThrow('índice duplicado ficticio');
   });
 });

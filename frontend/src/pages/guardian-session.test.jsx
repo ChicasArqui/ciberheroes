@@ -17,6 +17,25 @@ beforeEach(() => vi.resetAllMocks());
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
 describe('recuperación de la sesión del Guardián', () => {
+    it('orienta al login cuando la cuenta se creó pero la sesión automática falló', async () => {
+        api.getGuardianFamily.mockRejectedValue(noSession());
+        api.registerGuardian.mockResolvedValue({
+            guardian: { id: 'ficticio', email: 'ficticio@example.com' }, sessionCreated: false,
+        });
+        const onLogin = vi.fn();
+        render(<GuardianRegisterPage onLogin={onLogin} />);
+        fireEvent.change(await screen.findByLabelText('Tu correo electrónico'), { target: { value: 'ficticio@example.com' } });
+        for (const label of ['Crea tu contraseña', 'Repite tu contraseña']) {
+            fireEvent.change(screen.getByLabelText(label), { target: { value: 'ClaveFicticiaParaPruebas!123' } });
+        }
+        fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta de Guardián' }));
+        await screen.findByText(/Tu cuenta ya se creó/);
+        expect(api.registerGuardian).toHaveBeenCalledTimes(1);
+        expect(api.getGuardianFamily).toHaveBeenCalledTimes(1);
+        expect(screen.queryByRole('button', { name: 'Crear cuenta de Guardián' })).toBeNull();
+        fireEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
+        expect(onLogin).toHaveBeenCalledTimes(1);
+    });
     it('exige la comprobación y envía el token al reintentar el login', async () => {
         api.getGuardianFamily.mockRejectedValue(noSession());
         const config = { siteKey: 'publica-ficticia', action: 'guardian-login', cData: 'contexto' };

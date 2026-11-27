@@ -7,6 +7,7 @@ const { createSessionMiddleware } = require('../src/config/session');
 const Guardian = require('../src/modules/auth/guardian.model');
 const Family = require('../src/modules/profiles/family.model');
 const { createAuthRateLimiters } = require('../src/modules/auth/auth-rate-limit');
+const { ensureAuthIndexes } = require('../src/modules/auth/auth-indexes');
 
 // Activación explícita: una URI de desarrollo existente no debe activar limpieza.
 const describeWithMongo = process.env.RUN_MONGO_INTEGRATION === '1'
@@ -18,6 +19,7 @@ describeWithMongo('integración real: registro, MongoDB y sesión', () => {
   let agent;
   let sessionStore;
   let sessionMiddleware;
+  const previousAutoIndex = mongoose.get('autoIndex');
   function mongoRateLimiters(challengeVerifier) {
     return createAuthRateLimiters({
       storeClient: mongoose.connection.getClient(),
@@ -44,12 +46,13 @@ describeWithMongo('integración real: registro, MongoDB y sesión', () => {
       throw new Error('SESSION_SECRET debe configurarse para esta prueba.');
     }
 
+    mongoose.set('autoIndex', false);
     await mongoose.connect(process.env.MONGODB_URI, {
       serverSelectionTimeoutMS: 10000,
       runtimeAdapters: { os }
     });
     await mongoose.connection.dropDatabase();
-    await Promise.all([Guardian.init(), Family.init()]);
+    await ensureAuthIndexes();
 
     sessionStore = MongoStore.create({
       clientPromise: Promise.resolve(mongoose.connection.getClient()),
@@ -82,6 +85,7 @@ describeWithMongo('integración real: registro, MongoDB y sesión', () => {
     if (mongoose.connection.readyState !== 0) {
       await mongoose.disconnect();
     }
+    mongoose.set('autoIndex', previousAutoIndex);
   }, 30000);
 
   test('persiste Guardián y familia, mantiene la sesión y la invalida al salir', async () => {
@@ -118,6 +122,7 @@ describeWithMongo('integración real: registro, MongoDB y sesión', () => {
 
     const familyResponse = await agent.get('/api/guardian/family');
     expect(familyResponse.status).toBe(200);
+    expect(familyResponse.headers['cache-control']).toBe('no-store');
     expect(familyResponse.body).toEqual({ familyCode: family.familyCode });
 
     const logout = await agent.post('/api/auth/logout');
@@ -153,6 +158,49 @@ describeWithMongo('integración real: registro, MongoDB y sesión', () => {
     expect(duplicate.body).toEqual({ error: 'EMAIL_ALREADY_EXISTS' });
     expect(await Guardian.countDocuments()).toBe(1);
     expect(await Family.countDocuments()).toBe(1);
+  });
+
+  test('los índices únicos existen antes de atender registros simultáneos', async () => {
+    expect(await Guardian.collection.indexes()).toEqual(expect.arrayContaining([
+      expect.objectContaining({ key: { email: 1 }, unique: true })
+    ]));
+    expect(await Family.collection.indexes()).toEqual(expect.arrayContaining([
+      expect.objectContaining({ key: { familyCode: 1 }, unique: true })
+    ]));
+    const familyCount = await Family.countDocuments();
+    const input = { email: 'concurrente@example.com', password: 'ClaveFicticiaParaPruebas!123' };
+    const responses = await Promise.all([request(app), request(app)].map(client =>
+      client.post('/api/auth/register').send(input)));
+    expect(responses.map(response => response.status).sort()).toEqual([201, 409]);
+    expect(await Guardian.countDocuments({ email: input.email })).toBe(1);
+    expect(await Family.countDocuments()).toBe(familyCount + 1);
+    const family = await Family.findOne();
+    await expect(Family.create({ familyCode: family.familyCode })).rejects.toMatchObject({ code: 11000 });
+  });
+
+  test.each(['regenerate', 'save'])('la cuenta persiste si falla %s y permite login posterior', async failure => {
+    const method = failure === 'save' ? 'set' : 'destroy';
+    const failingStore = jest.spyOn(sessionStore, method).mockImplementationOnce((...args) => {
+      args.at(-1)(new Error('fallo ficticio del almacén de sesión'));
+    });
+    const client = request.agent(app);
+    const input = { email: `parcial-${failure}@example.com`, password: 'ClaveFicticiaParaPruebas!123' };
+    try {
+      const registration = await client.post('/api/auth/register').send(input).expect(201);
+      expect(registration.body.sessionCreated).toBe(false);
+      expect(registration.headers['cache-control']).toBe('no-store');
+      const guardian = await Guardian.findOne({ email: input.email });
+      expect(guardian).not.toBeNull();
+      expect(await Family.findById(guardian.familyId)).not.toBeNull();
+      await client.get('/api/guardian/family').expect(401);
+      await client.post('/api/auth/register').send(input).expect(409);
+      await client.post('/api/auth/login').send(input).expect(200);
+      const family = await client.get('/api/guardian/family').expect(200);
+      expect(family.body.familyCode).toMatch(/^[A-Z0-9]{8}$/);
+      expect(await Guardian.countDocuments({ email: input.email })).toBe(1);
+    } finally {
+      failingStore.mockRestore();
+    }
   });
   test('dos cuentas tienen familias distintas y no pueden consultar la familia ajena', async () => {
     const first = request.agent(app);

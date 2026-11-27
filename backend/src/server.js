@@ -6,11 +6,13 @@ const { connectDB } = require('./config/database');
 const { createSessionMiddleware } = require('./config/session');
 const mongoose = require('mongoose');
 const { createAuthRateLimiters } = require('./modules/auth/auth-rate-limit');
+const { ensureAuthIndexes } = require('./modules/auth/auth-indexes');
 
 const PORT = process.env.PORT || 3000;
 
 async function startServer() {
   await connectDB();
+  await ensureAuthIndexes();
 
   const sessionMiddleware = createSessionMiddleware();
   const authRateLimiters = createAuthRateLimiters({
@@ -31,7 +33,7 @@ async function startServer() {
 
 if (require.main === module) {
   startServer().catch(() => {
-    console.error('No se pudo iniciar: revisa la configuración de MongoDB y la sesión.');
+    console.error('No se pudo iniciar: revisa MongoDB, los índices y la sesión.');
     process.exitCode = 1;
   });
 }

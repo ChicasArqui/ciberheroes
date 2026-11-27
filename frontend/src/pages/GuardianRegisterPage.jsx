@@ -22,6 +22,7 @@ export default function GuardianRegisterPage({ onLogin, onRegistrationComplete }
         isCheckingSession, sessionError
     } = useGuardianSession();
     const [registrationComplete, setRegistrationComplete] = useState(false);
+    const [loginRequired, setLoginRequired] = useState(false);
     async function handleSubmit(event) {
         event.preventDefault();
         setPasswordError('');
@@ -49,7 +50,20 @@ export default function GuardianRegisterPage({ onLogin, onRegistrationComplete }
         setIsSubmitting(true);
 
         try {
-            await registerGuardian({ email, password });
+            const registration = await registerGuardian({ email, password });
+            if (registration?.sessionCreated === false) {
+                setLoginRequired(true);
+                setRegistrationComplete(true);
+                setIsAuthenticated(false);
+                setPassword('');
+                setConfirmPassword('');
+                setShowPassword(false);
+                setShowConfirmPassword(false);
+                setFormMessage('Tu cuenta ya se creó, pero no pudimos iniciar la sesión automáticamente. Inicia sesión para continuar.');
+                onRegistrationComplete?.();
+                setIsSubmitting(false);
+                return;
+            }
             setIsAuthenticated(true);
             setPassword('');
             setConfirmPassword('');
@@ -112,7 +126,7 @@ export default function GuardianRegisterPage({ onLogin, onRegistrationComplete }
                     onClick={onLogin}
                     disabled={isSubmitting}
                 >
-                    {isSubmitting ? 'Preparando tu código…' : 'Ir a mi espacio familiar'}
+                    {isSubmitting ? 'Preparando tu código…' : loginRequired ? 'Iniciar sesión' : 'Ir a mi espacio familiar'}
                 </button>
             </section>
         );
