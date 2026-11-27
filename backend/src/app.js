@@ -7,6 +7,13 @@ const app = express();
 const frontendDist = path.resolve(__dirname, '../../frontend/dist');
 
 app.use(express.json());
+app.use((error, req, res, next) => {
+  if (error.type !== 'entity.parse.failed') {
+    return next(error);
+  }
+
+  return res.status(400).json({ error: 'JSON inválido' });
+});
 app.use('/api/lecciones', learningRoutes);
 
 app.get('/health', (req, res) => {
