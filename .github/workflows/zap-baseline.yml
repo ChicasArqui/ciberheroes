@@ -62,8 +62,9 @@ jobs:
           # Keep Docker and ZAP failures visible while uploading any reports.
           docker run --name ciberheroes-zap-scanner --network "$SCAN_NETWORK" \
             --mount "type=bind,source=$REPORT_DIR,target=/zap/wrk" \
+            --mount "type=bind,source=$GITHUB_WORKSPACE/.zap/rules.tsv,target=/zap/wrk/rules.tsv,readonly" \
             "$ZAP_IMAGE" zap-baseline.py -t http://app:10000 -m 1 -T 5 \
-            -r zap-report.html -J zap-report.json
+            -c rules.tsv -r zap-report.html -J zap-report.json
 
       - name: Clean up scan containers and network
         if: always()
