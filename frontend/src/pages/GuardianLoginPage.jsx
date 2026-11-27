@@ -4,11 +4,13 @@ import {
     loginGuardian,
     logoutGuardian
 } from '../services/api.js';
+import FamilyCodeDisplay from '../components/FamilyCodeDisplay.jsx';
 import './GuardianRegisterPage.css';
 
 export default function GuardianLoginPage({ onRegister }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formMessage, setFormMessage] = useState('');
     const [familyCode, setFamilyCode] = useState('');
@@ -23,6 +25,7 @@ export default function GuardianLoginPage({ onRegister }) {
         try {
             await loginGuardian({ email, password });
             setIsAuthenticated(true);
+            setShowPassword(false);
         } catch (error) {
             if (error.code === 'INVALID_CREDENTIALS') {
                 setFormMessage('Correo o contraseña incorrectos.');
@@ -39,7 +42,6 @@ export default function GuardianLoginPage({ onRegister }) {
         try {
             const family = await getGuardianFamily();
             setFamilyCode(family.familyCode);
-            setFormMessage('Sesión iniciada. Tu código familiar es:');
         } catch {
             setFormMessage(
                 'Sesión iniciada, pero no pudimos cargar el código familiar.'
@@ -59,6 +61,7 @@ export default function GuardianLoginPage({ onRegister }) {
             setFamilyCode('');
             setEmail('');
             setPassword('');
+            setShowPassword(false);
             setFormMessage('Sesión cerrada.');
         } catch {
             setFormMessage('No pudimos cerrar sesión. Inténtalo de nuevo.');
@@ -89,17 +92,32 @@ export default function GuardianLoginPage({ onRegister }) {
 
                 <div className="guardian-field">
                     <label htmlFor="login-password">Tu contraseña</label>
-                    <input
-                        className="guardian-input"
-                        id="login-password"
-                        name="password"
-                        type="password"
-                        autoComplete="current-password"
-                        value={password}
-                        onChange={(event) => setPassword(event.target.value)}
-                        disabled={isAuthenticated || isSubmitting}
-                        required
-                    />
+                    <div className="guardian-password-control">
+                        <input
+                            className="guardian-input"
+                            id="login-password"
+                            name="password"
+                            type={showPassword ? 'text' : 'password'}
+                            autoComplete="current-password"
+                            value={password}
+                            onChange={(event) => setPassword(event.target.value)}
+                            disabled={isAuthenticated || isSubmitting}
+                            required
+                        />
+                        <button
+                            className="guardian-password-toggle"
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                            aria-pressed={showPassword}
+                        >
+                            <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z" />
+                                <circle cx="12" cy="12" r="3" />
+                                {showPassword && <path d="M3 3l18 18" />}
+                            </svg>
+                        </button>
+                    </div>
                 </div>
 
                 <button
@@ -117,9 +135,7 @@ export default function GuardianLoginPage({ onRegister }) {
                 )}
 
                 {familyCode && (
-                    <p className="guardian-message" role="status">
-                        Código familiar: <strong>{familyCode}</strong>
-                    </p>
+                    <FamilyCodeDisplay familyCode={familyCode} />
                 )}
 
                 {isAuthenticated && (

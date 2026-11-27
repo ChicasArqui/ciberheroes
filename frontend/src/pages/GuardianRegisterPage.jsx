@@ -3,9 +3,10 @@ import {
     registerGuardian,
     getGuardianFamily
 } from '../services/api.js';
+import FamilyCodeDisplay from '../components/FamilyCodeDisplay.jsx';
 import './GuardianRegisterPage.css';
 
-export default function GuardianRegisterPage() {
+export default function GuardianRegisterPage({ onLogin, onRegistrationComplete }) {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -16,6 +17,7 @@ export default function GuardianRegisterPage() {
     const [email, setEmail] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [familyCode, setFamilyCode] = useState('');
+    const [registrationComplete, setRegistrationComplete] = useState(false);
     async function handleSubmit(event) {
         event.preventDefault();
         setPasswordError('');
@@ -33,7 +35,6 @@ export default function GuardianRegisterPage() {
             );
             return;
         }
-        // eslint-disable-next-line security/detect-possible-timing-attacks -- Comparación local del formulario; la verificación real de credenciales ocurre en el backend.
         if (password !== confirmPassword) {
             setPasswordError(
                 'Las contraseñas no coinciden. Revísalas e inténtalo de nuevo.'
@@ -45,6 +46,9 @@ export default function GuardianRegisterPage() {
 
         try {
             await registerGuardian({ email, password });
+            setFormMessage('Estamos preparando tu código familiar…');
+            setRegistrationComplete(true);
+            onRegistrationComplete?.();
         } catch (error) {
             if (error.code === 'EMAIL_ALREADY_EXISTS') {
                 setFormMessage('Ya existe una cuenta con ese correo.');
@@ -70,11 +74,42 @@ export default function GuardianRegisterPage() {
             setIsSubmitting(false);
         }
     }
+    if (registrationComplete) {
+        return (
+            <section className="guardian-register guardian-registration-success" aria-live="polite">
+                <div className="guardian-success-icon" aria-hidden="true">✓</div>
+                <h1 className="form-title">¡Bienvenido, Guardián!</h1>
+                <p className="guardian-intro">
+                    Todo empieza con una familia que acompaña.
+                </p>
+                {familyCode ? (
+                    <FamilyCodeDisplay
+                        familyCode={familyCode}
+                        description="Compártelo con el CiberHéroe para que encuentre su perfil."
+                    />
+                ) : (
+                    <p className="guardian-message" role="status">
+                        {formMessage || 'La cuenta se creó. Inicia sesión para consultar tu código familiar.'}
+                    </p>
+                )}
+                <button
+                    className="button button-primary guardian-submit"
+                    type="button"
+                    onClick={onLogin}
+                    disabled={isSubmitting}
+                >
+                    {isSubmitting ? 'Preparando tu código…' : 'Iniciar sesión'}
+                </button>
+            </section>
+        );
+    }
+
     return (
         <section className="guardian-register">
-            <h1 className="form-title">Crea tu cuenta de Guardián para acompañar a tu
-                CiberHéroe
-            </h1>
+            <h1 className="form-title">Una aventura empieza en familia.</h1>
+            <p className="guardian-intro">
+                Crea tu cuenta de Guardián para acompañar a tu CiberHéroe.
+            </p>
 
             <form
                 className="guardian-form"
@@ -187,9 +222,7 @@ export default function GuardianRegisterPage() {
                     </p>
                 )}
                 {familyCode && (
-                    <p className="guardian-message" role="status">
-                        Código familiar: <strong>{familyCode}</strong>
-                    </p>
+                    <FamilyCodeDisplay familyCode={familyCode} />
                 )}
             </form>
         </section>

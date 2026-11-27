@@ -2,6 +2,60 @@
   width: 100%;
 }
 
+.guardian-intro {
+  max-width: 440px;
+  margin: -8px 0 0;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.guardian-registration-success {
+  display: grid;
+  justify-items: start;
+}
+
+.guardian-registration-success .guardian-intro {
+  margin-top: 0;
+}
+
+.guardian-success-icon {
+  display: grid;
+  width: 58px;
+  height: 58px;
+  margin-bottom: 20px;
+  place-items: center;
+  border-radius: 50%;
+  background: #e8f0dc;
+  color: #4c783a;
+  font-size: 31px;
+  font-weight: 700;
+}
+
+.guardian-registration-success .family-code-display {
+  margin: 12px 0 18px;
+}
+
+.guardian-registration-success > .guardian-submit {
+  width: auto;
+  min-width: 190px;
+}
+
+.guardian-message,
+.guardian-error {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.guardian-message {
+  color: var(--muted);
+}
+
+.guardian-error {
+  color: #a32845;
+}
+
 .guardian-form {
   display: grid;
   gap: 16px;

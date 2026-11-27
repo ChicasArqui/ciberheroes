@@ -2,14 +2,14 @@ const session = require('express-session');
 const { MongoStore } = require('connect-mongo');
 const mongoose = require('mongoose');
 
-function createSessionMiddleware() {
+function createSessionMiddleware({ store: suppliedStore } = {}) {
   const secret = process.env.SESSION_SECRET;
 
   if (!secret) {
     throw new Error('SESSION_SECRET no está configurada');
   }
 
-  const store = MongoStore.create({
+  const store = suppliedStore || MongoStore.create({
     clientPromise: Promise.resolve(mongoose.connection.getClient()),
     collectionName: 'sessions',
     ttl: 60 * 60

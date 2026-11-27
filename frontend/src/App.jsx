@@ -16,6 +16,7 @@ function getScreenFromHash() {
 }
 export default function App() {
   const [screen, setScreen] = useState(getScreenFromHash);
+  const [pipoSceneOverride, setPipoSceneOverride] = useState('');
   const [notice, setNotice] = useState('');
   const [serviceStatus, setServiceStatus] = useState({
     server: 'checking',
@@ -41,6 +42,7 @@ export default function App() {
     const handlePopState = () => {
       setNotice('');
       setScreen(getScreenFromHash);
+      setPipoSceneOverride('');
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
@@ -48,18 +50,21 @@ export default function App() {
 
   const openRoleSelection = () => {
     setNotice('');
+    setPipoSceneOverride('');
     setScreen('roles');
     window.history.pushState({ screen: 'roles' }, '', '#roles');
   };
 
   const goWelcome = () => {
     setNotice('');
+    setPipoSceneOverride('');
     setScreen('welcome');
     window.history.pushState({ screen: 'welcome' }, '', '#inicio');
   };
 
   const openGuardianRegister = () => {
     setNotice('');
+    setPipoSceneOverride('');
     setScreen('guardian-register');
     window.history.pushState(
       { screen: 'guardian-register' },
@@ -70,6 +75,7 @@ export default function App() {
 
   const openGuardianLogin = () => {
     setNotice('');
+    setPipoSceneOverride('');
     setScreen('guardian-login');
     window.history.pushState(
       { screen: 'guardian-login' },
@@ -102,7 +108,10 @@ export default function App() {
             ) : screen === 'roles' ? (
               <RoleSelectionPage onBack={goWelcome} onRole={showScopeNotice} />
             ) : screen === 'guardian-register' ? (
-              <GuardianRegisterPage />
+              <GuardianRegisterPage
+                onLogin={openGuardianLogin}
+                onRegistrationComplete={() => setPipoSceneOverride('guardian-success')}
+              />
             ) : (
               <GuardianLoginPage onRegister={openGuardianRegister} />
             )}
@@ -114,7 +123,7 @@ export default function App() {
               </div>
             )}
           </section>
-          <PipoScene welcome={screen === 'welcome'} />
+          <PipoScene scene={pipoSceneOverride || screen} />
         </div>
       </main>
       <footer className="site-footer">

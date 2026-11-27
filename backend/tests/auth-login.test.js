@@ -81,4 +81,25 @@ describe('POST /api/auth/login', () => {
     });
     expect(regenerateCalls).toBe(0);
   });
+
+  test('rechaza datos inválidos sin crear sesión', async () => {
+    loginGuardian.mockRejectedValue(
+      Object.assign(new Error('INVALID_INPUT'), {
+        code: 'INVALID_INPUT'
+      })
+    );
+
+    const response = await request(app)
+      .post('/api/auth/login')
+      .send({
+        email: 'correo-inválido',
+        password: 'x'
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({
+      error: 'INVALID_INPUT'
+    });
+    expect(regenerateCalls).toBe(0);
+  });
 });

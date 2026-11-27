@@ -1,0 +1,32 @@
+# Base local de desarrollo. El puerto solo se publica en esta computadora.
+name: ciberheroes-local
+
+services:
+  mongo:
+    image: mongo:7
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - mongo-local-data:/data/db
+    healthcheck:
+      test:
+        - CMD
+        - mongosh
+        - --quiet
+        - --eval
+        - >-
+          try {
+            rs.status();
+          } catch (error) {
+            if (error.code !== 94) throw error;
+            rs.initiate({_id: 'rs0', members: [{_id: 0, host: 'localhost:27017'}]});
+          }
+          if (!db.hello().isWritablePrimary) quit(1);
+      interval: 3s
+      timeout: 5s
+      retries: 30
+      start_period: 5s
+
+volumes:
+  mongo-local-data:
