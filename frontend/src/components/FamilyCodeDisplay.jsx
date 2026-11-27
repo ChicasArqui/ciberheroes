@@ -25,6 +25,9 @@ export default function FamilyCodeDisplay({
         <section className="family-code-display" aria-labelledby="family-code-title">
             <h2 id="family-code-title">{title}</h2>
             <p className="family-code-description">{description}</p>
+            <p className="family-code-description">
+                Este código es privado. Compártelo únicamente con tu familia.
+            </p>
             <div className="family-code-row">
                 <strong className="family-code-value">{familyCode}</strong>
                 <button

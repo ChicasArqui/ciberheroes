@@ -135,4 +135,60 @@ describeWithMongo('integración real: registro, MongoDB y sesión', () => {
     expect(await Guardian.countDocuments()).toBe(1);
     expect(await Family.countDocuments()).toBe(1);
   });
+  test('dos cuentas tienen familias distintas y no pueden consultar la familia ajena', async () => {
+    const first = request.agent(app);
+    const second = request.agent(app);
+    const password = 'ClaveFicticiaParaPruebas!123';
+    const firstRegistration = await first.post('/api/auth/register')
+      .send({ email: 'familia-a@example.com', password });
+    const secondRegistration = await second.post('/api/auth/register')
+      .send({ email: 'familia-b@example.com', password });
+    expect(firstRegistration.status).toBe(201);
+    expect(secondRegistration.status).toBe(201);
+
+    const firstGuardian = await Guardian.findById(firstRegistration.body.guardian.id);
+    const secondGuardian = await Guardian.findById(secondRegistration.body.guardian.id);
+    expect(firstGuardian.familyId.toString()).not.toBe(secondGuardian.familyId.toString());
+
+    const firstFamily = await first.get('/api/guardian/family');
+    const secondFamily = await second.get('/api/guardian/family');
+    expect(firstFamily.status).toBe(200);
+    expect(secondFamily.status).toBe(200);
+    expect(firstFamily.body.familyCode).not.toBe(secondFamily.body.familyCode);
+
+    const spoofed = await first.get('/api/guardian/family').query({
+      guardianId: secondGuardian.id,
+      familyId: secondGuardian.familyId.toString()
+    });
+    expect(spoofed.body).toEqual(firstFamily.body);
+    expect((await first.get(`/api/guardian/family/${secondGuardian.familyId}`)).status)
+      .toBe(404);
+    expect((await request(app).get('/api/guardian/family')).status).toBe(401);
+
+    // Una nueva instancia del cliente representa una recarga con la misma cookie.
+    const cookie = firstRegistration.headers['set-cookie'][0].split(';')[0];
+    const restored = await request(app).get('/api/guardian/family').set('Cookie', cookie);
+    expect(restored.body).toEqual(firstFamily.body);
+    await first.post('/api/auth/logout').expect(200);
+    await request(app).get('/api/guardian/family').set('Cookie', cookie).expect(401);
+    expect((await second.get('/api/guardian/family')).body).toEqual(secondFamily.body);
+  });
+
+  test('un fallo al persistir el Guardián revierte también la familia', async () => {
+    const guardianCount = await Guardian.countDocuments();
+    const familyCount = await Family.countDocuments();
+    const failingWrite = jest.spyOn(Guardian, 'create')
+      .mockRejectedValueOnce(new Error('fallo ficticio de escritura MongoDB'));
+    try {
+      const response = await request(app).post('/api/auth/register').send({
+        email: 'rollback@example.com', password: 'ClaveFicticiaParaPruebas!123'
+      });
+      expect(response.status).toBe(500);
+      expect(response.body).toEqual({ error: 'INTERNAL_SERVER_ERROR' });
+      expect(await Guardian.countDocuments()).toBe(guardianCount);
+      expect(await Family.countDocuments()).toBe(familyCount);
+    } finally {
+      failingWrite.mockRestore();
+    }
+  });
 });

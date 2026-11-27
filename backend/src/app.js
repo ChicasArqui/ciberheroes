@@ -39,6 +39,22 @@ function createApp({ sessionMiddleware } = {}) {
 
   app.use(express.static(frontendDist));
 
+  // Los errores del parser pueden incluir fragmentos de credenciales.
+  // Responder aquí evita que Express los imprima en sus logs por defecto.
+  app.use((error, req, res, next) => {
+    if (res.headersSent) return next(error);
+
+    if (error.type === 'entity.parse.failed') {
+      return res.status(400).json({ error: 'INVALID_INPUT' });
+    }
+
+    if (error.type === 'entity.too.large') {
+      return res.status(413).json({ error: 'PAYLOAD_TOO_LARGE' });
+    }
+
+    return res.status(500).json({ error: 'INTERNAL_SERVER_ERROR' });
+  });
+
   return app;
 }
 

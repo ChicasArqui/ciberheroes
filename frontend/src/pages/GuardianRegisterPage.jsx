@@ -4,6 +4,7 @@ import {
     getGuardianFamily
 } from '../services/api.js';
 import FamilyCodeDisplay from '../components/FamilyCodeDisplay.jsx';
+import useGuardianSession from '../hooks/useGuardianSession.js';
 import './GuardianRegisterPage.css';
 
 export default function GuardianRegisterPage({ onLogin, onRegistrationComplete }) {
@@ -16,7 +17,10 @@ export default function GuardianRegisterPage({ onLogin, onRegistrationComplete }
     const [formMessage, setFormMessage] = useState('');
     const [email, setEmail] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [familyCode, setFamilyCode] = useState('');
+    const {
+        familyCode, setFamilyCode, isAuthenticated, setIsAuthenticated,
+        isCheckingSession, sessionError
+    } = useGuardianSession();
     const [registrationComplete, setRegistrationComplete] = useState(false);
     async function handleSubmit(event) {
         event.preventDefault();
@@ -46,6 +50,9 @@ export default function GuardianRegisterPage({ onLogin, onRegistrationComplete }
 
         try {
             await registerGuardian({ email, password });
+            setIsAuthenticated(true);
+            setPassword('');
+            setConfirmPassword('');
             setFormMessage('Estamos preparando tu código familiar…');
             setRegistrationComplete(true);
             onRegistrationComplete?.();
@@ -74,7 +81,11 @@ export default function GuardianRegisterPage({ onLogin, onRegistrationComplete }
             setIsSubmitting(false);
         }
     }
-    if (registrationComplete) {
+    if (isCheckingSession) {
+        return <p role="status">Comprobando tu sesión…</p>;
+    }
+
+    if (registrationComplete || isAuthenticated) {
         return (
             <section className="guardian-register guardian-registration-success" aria-live="polite">
                 <div className="guardian-success-icon" aria-hidden="true">✓</div>
@@ -98,7 +109,7 @@ export default function GuardianRegisterPage({ onLogin, onRegistrationComplete }
                     onClick={onLogin}
                     disabled={isSubmitting}
                 >
-                    {isSubmitting ? 'Preparando tu código…' : 'Iniciar sesión'}
+                    {isSubmitting ? 'Preparando tu código…' : 'Ir a mi espacio familiar'}
                 </button>
             </section>
         );
@@ -106,6 +117,7 @@ export default function GuardianRegisterPage({ onLogin, onRegistrationComplete }
 
     return (
         <section className="guardian-register">
+            {sessionError && !formMessage && <p role="alert">{sessionError}</p>}
             <h1 className="form-title">Una aventura empieza en familia.</h1>
             <p className="guardian-intro">
                 Crea tu cuenta de Guardián para acompañar a tu CiberHéroe.

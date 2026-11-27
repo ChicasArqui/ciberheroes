@@ -5,6 +5,7 @@ import {
     logoutGuardian
 } from '../services/api.js';
 import FamilyCodeDisplay from '../components/FamilyCodeDisplay.jsx';
+import useGuardianSession from '../hooks/useGuardianSession.js';
 import './GuardianRegisterPage.css';
 
 export default function GuardianLoginPage({ onRegister }) {
@@ -13,8 +14,10 @@ export default function GuardianLoginPage({ onRegister }) {
     const [showPassword, setShowPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formMessage, setFormMessage] = useState('');
-    const [familyCode, setFamilyCode] = useState('');
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const {
+        familyCode, setFamilyCode, isAuthenticated, setIsAuthenticated,
+        isCheckingSession, sessionError
+    } = useGuardianSession();
 
     async function handleSubmit(event) {
         event.preventDefault();
@@ -25,6 +28,7 @@ export default function GuardianLoginPage({ onRegister }) {
         try {
             await loginGuardian({ email, password });
             setIsAuthenticated(true);
+            setPassword('');
             setShowPassword(false);
         } catch (error) {
             if (error.code === 'INVALID_CREDENTIALS') {
@@ -70,9 +74,16 @@ export default function GuardianLoginPage({ onRegister }) {
         }
     }
 
+    if (isCheckingSession) {
+        return <p role="status">Comprobando tu sesión…</p>;
+    }
+
     return (
         <section className="guardian-register">
-            <h1 className="form-title">Inicia sesión como Guardián</h1>
+            <h1 className="form-title">
+                {isAuthenticated ? 'Tu espacio familiar' : 'Inicia sesión como Guardián'}
+            </h1>
+            {sessionError && !isAuthenticated && !formMessage && <p role="alert">{sessionError}</p>}
 
             <form className="guardian-form" onSubmit={handleSubmit}>
                 <div className="guardian-field">

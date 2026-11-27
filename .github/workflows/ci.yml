@@ -50,6 +50,9 @@ jobs:
       - name: Build React frontend
         run: npm run build --prefix frontend
 
+      - name: Test guardian frontend session recovery
+        run: npm test --prefix frontend
+
       - name: Start temporary MongoDB for CI
         run: npm run mongo:up
 
