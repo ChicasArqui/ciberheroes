@@ -26,6 +26,72 @@ afterEach(() => jest.restoreAllMocks());
 
 const post = (route, body = input) => request(app).post(`/api/auth/${route}`).send(body);
 
+test('en Render cuenta la IP del visitante aunque cambien los proxies y X-Forwarded-For', async () => {
+  app = baseApp.createApp({ authRateLimiters: createAuthRateLimiters({ renderIngress: true }) });
+  app.set('trust proxy', 1);
+  for (let i = 0; i < 6; i++) {
+    await post('login').set('CF-Connecting-IP', '203.0.113.10')
+      .set('X-Forwarded-For', `192.0.2.${i + 1}, 198.51.100.${i + 1}`)
+      .expect(i < 5 ? 401 : 429);
+  }
+  await post('login').set('CF-Connecting-IP', '203.0.113.11')
+    .set('X-Forwarded-For', '192.0.2.1, 198.51.100.1').expect(401);
+});
+
+test('fuera de Render no permite evadir el límite falsificando CF-Connecting-IP', async () => {
+  for (let i = 0; i < 6; i++) {
+    await post('login').set('CF-Connecting-IP', `203.0.113.${i + 1}`)
+      .expect(i < 5 ? 401 : 429);
+  }
+});
+
+test.each([undefined, 'no-es-ip', '203.0.113.1, 203.0.113.2'])('en Render rechaza una IP ausente o inválida: %s', async ip => {
+  app = baseApp.createApp({ authRateLimiters: createAuthRateLimiters({ renderIngress: true }) });
+  for (const route of ['login', 'register']) {
+    const req = post(route);
+    if (ip) req.set('CF-Connecting-IP', ip);
+    const response = await req.expect(503);
+    expect(response.body).toEqual({ error: 'AUTH_SERVICE_UNAVAILABLE' });
+  }
+  expect(loginGuardian).not.toHaveBeenCalled();
+  expect(registerGuardian).not.toHaveBeenCalled();
+});
+
+test('en Render los registros comparten la cuota del visitante entre proxies', async () => {
+  app = baseApp.createApp({ authRateLimiters: createAuthRateLimiters({ renderIngress: true }) });
+  app.set('trust proxy', 1);
+  for (let i = 0; i < 21; i++) {
+    await post('register', { ...input, email: `registro${i}@example.com` })
+      .set('CF-Connecting-IP', '2001:db8::1')
+      .set('X-Forwarded-For', `198.51.100.${i + 1}`).expect(i < 20 ? 409 : 429);
+  }
+});
+
+test('Turnstile recibe la IP del visitante y un contexto estable entre proxies', async () => {
+  const verify = jest.fn().mockResolvedValue(true);
+  const configurations = [];
+  const authRateLimiters = createAuthRateLimiters({
+    renderIngress: true,
+    challengeVerifier: {
+      publicConfig(cData) { configurations.push(cData); return { siteKey: 'publica', cData }; },
+      verify
+    }
+  });
+  app = baseApp.createApp({ authRateLimiters });
+  app.set('trust proxy', 1);
+  for (let i = 0; i < 10; i++) {
+    await post('login').set('CF-Connecting-IP', `203.0.113.${i + 1}`)
+      .set('X-Forwarded-For', '198.51.100.1').expect(401);
+  }
+  await post('login').set('CF-Connecting-IP', '203.0.113.100')
+    .set('X-Forwarded-For', '198.51.100.2').expect(403);
+  await post('login', { ...input, challengeToken: 'token-ficticio' })
+    .set('CF-Connecting-IP', '203.0.113.100')
+    .set('X-Forwarded-For', '198.51.100.3').expect(401);
+  expect(configurations[0]).toBe(configurations[1]);
+  expect(verify).toHaveBeenCalledWith(expect.objectContaining({ ip: '203.0.113.100', cData: configurations[0] }));
+});
+
 // Usar el almacén real permite verificar si consume() escribió antes de rechazar.
 function observeCounters() {
   const counters = new Map();

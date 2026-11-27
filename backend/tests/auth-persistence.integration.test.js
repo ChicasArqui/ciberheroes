@@ -324,4 +324,24 @@ describeWithMongo('integración real: registro, MongoDB y sesión', () => {
     expect(tokens).toHaveLength(2);
     expect(JSON.stringify(tokens)).not.toContain('token-concurrente-ficticio');
   });
+
+  test('en Render Mongo mantiene un contador del visitante entre proxies concurrentes', async () => {
+    const authRateLimiters = createAuthRateLimiters({
+      storeClient: mongoose.connection.getClient(), dbName: mongoose.connection.name,
+      secret: process.env.SESSION_SECRET, renderIngress: true
+    });
+    await authRateLimiters.ready;
+    const server = baseApp.createApp({ sessionMiddleware, authRateLimiters });
+    server.set('trust proxy', 1);
+    const responses = await Promise.all(Array.from({ length: 6 }, (_, i) =>
+      request(server).post('/api/auth/login')
+        .set('CF-Connecting-IP', '203.0.113.25')
+        .set('X-Forwarded-For', `192.0.2.${i + 1}, 198.51.100.${i + 1}`)
+        .send({ email: 'proxy-concurrente@example.com', password: 'FicticiaIncorrecta!123' })));
+    expect(responses.filter(response => response.status === 401)).toHaveLength(5);
+    expect(responses.filter(response => response.status === 429)).toHaveLength(1);
+    const counters = await mongoose.connection.db.collection('auth_login_identity').find().toArray();
+    expect(counters).toHaveLength(1);
+    expect(counters[0].points).toBe(5);
+  });
 });
