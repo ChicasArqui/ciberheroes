@@ -1,6 +1,6 @@
 # CiberHéroes – Frontend
 
-Frontend de React para CIB-26. Incluye la bienvenida y la selección de rol con el sistema visual aprobado. No implementa autenticación, registro ni persistencia de perfiles; consulta `/health` para mostrar el estado de Express y MongoDB.
+Frontend de React con bienvenida, selección de rol y registro e inicio/cierre de sesión del Guardián. Consulta `/health` para mostrar el estado de Express y MongoDB y recupera la sesión existente al abrir las pantallas del Guardián.
 
 ## Requisitos
 - Node.js 24.x y npm, igual que el backend y la raíz del repositorio.
@@ -41,4 +41,15 @@ Nunito y Baloo 2 se cargan desde Google Fonts, con fuentes del sistema como alte
 En desarrollo, Vite usa el puerto `5173` y reenvía `/health` y `/api` a Express en el puerto `3000`. En producción, Express sirve el build de React y ambos usan el mismo origen. El cliente valida la respuesta de `/health` y muestra por separado el estado de la API y de MongoDB.
 
 ## Alcance intencional
-La selección de rol solo informa qué espacio eligió la persona. No crea usuarios, no solicita contraseñas, no almacena datos ni simula una sesión real.
+El acceso del Guardián utiliza la API y su cookie de sesión para mostrar el código familiar privado. El acceso de CiberHéroe se integrará en una tarea posterior.
+
+## Pruebas del frontend
+
+Desde la raíz del repositorio:
+
+```bash
+npm ci --prefix frontend
+npm test --prefix frontend
+```
+
+Las pruebas comprueban la recuperación de sesión al recargar, registro, inicio/cierre de sesión, errores de servicio y copia del código familiar. Usan respuestas de API ficticias y no necesitan MongoDB. GitHub Actions las ejecuta junto con las pruebas del backend.

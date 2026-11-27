@@ -20,10 +20,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "24"
           cache: npm
@@ -50,8 +50,14 @@ jobs:
       - name: Build React frontend
         run: npm run build --prefix frontend
 
-      - name: Run root and backend tests with 85% coverage
-        run: npm run test:coverage
+      - name: Test guardian frontend session recovery
+        run: npm test --prefix frontend
+
+      - name: Start temporary MongoDB for CI
+        run: npm run mongo:up
+
+      - name: Run tests including MongoDB persistence with 85% coverage
+        run: npm run test:mongo
 
       - name: Security analysis with ESLint
         run: npm run lint
@@ -63,21 +69,32 @@ jobs:
         run: |
           docker build --tag ciberheroes:ci .
 
+          # Temporary credentials for this runner only. Atlas is not used.
+          export SESSION_SECRET=$(node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))")
+          echo "::add-mask::$SESSION_SECRET"
+
+          # This job runs on Linux; host networking reaches the local MongoDB.
           container=$(docker run --detach \
-            --publish 127.0.0.1:8080:10000 \
-            --env PORT=10000 \
+            --network host \
+            --env PORT=8080 \
+            --env MONGODB_URI='mongodb://127.0.0.1:27017/ciberheroes_docker_ci?replicaSet=rs0&directConnection=true' \
+            --env SESSION_SECRET \
             ciberheroes:ci)
 
           trap 'docker logs "$container"; docker rm -f "$container"' EXIT
 
           for i in $(seq 1 10); do
-            if node scripts/verify-deployment.cjs http://127.0.0.1:8080; then
+            if node scripts/verify-deployment.cjs http://127.0.0.1:8080 --require-database; then
               exit 0
             fi
             sleep 2
           done
 
           exit 1
+
+      - name: Stop temporary MongoDB
+        if: always()
+        run: docker compose -f compose.mongo.yml down --volumes
 
   deploy-dev:
     name: Deploy to development
@@ -116,10 +133,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "24"
 

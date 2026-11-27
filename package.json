@@ -9,6 +9,10 @@
     "start": "node server.js",
     "test": "jest",
     "test:coverage": "jest --coverage --ci --runInBand",
+    "test:mongo": "node scripts/test-mongo.cjs",
+    "mongo:up": "docker compose -f compose.mongo.yml up -d --wait --wait-timeout 120",
+    "mongo:down": "docker compose -f compose.mongo.yml down",
+    "mongo:status": "docker compose -f compose.mongo.yml ps",
     "lint": "eslint . --ext .js,.jsx --max-warnings=0"
   },
   "jest": {

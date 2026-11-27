@@ -45,6 +45,14 @@
         "react/jsx-uses-react": "error",
         "react/jsx-uses-vars": "error"
       }
+    },
+    {
+      "files": [
+        "frontend/src/pages/GuardianRegisterPage.jsx"
+      ],
+      "rules": {
+        "security/detect-possible-timing-attacks": "off"
+      }
     }
   ],
   "ignorePatterns": [

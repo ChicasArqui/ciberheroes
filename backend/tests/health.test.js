@@ -1,6 +1,8 @@
-jest.mock('mongoose', () => ({ connection: { readyState: 0 } }));
+jest.mock('../src/config/database', () => ({
+  getDatabaseStatus: jest.fn().mockReturnValue('disconnected')
+}));
 
-const mongoose = require('mongoose');
+const { getDatabaseStatus } = require('../src/config/database');
 const request = require('supertest');
 const app = require('../src/app');
 
@@ -18,13 +20,9 @@ describe('API CiberHeroes', () => {
   });
 
   test('GET /health informa una conexion activa a MongoDB', async () => {
-    mongoose.connection.readyState = 1;
-    try {
-      const response = await request(app).get('/health').expect(200);
-      expect(response.body.database).toBe('connected');
-    } finally {
-      mongoose.connection.readyState = 0;
-    }
+    getDatabaseStatus.mockReturnValueOnce('connected');
+    const response = await request(app).get('/health').expect(200);
+    expect(response.body.database).toBe('connected');
   });
 
   test('GET /ruta-inexistente responde 404', async () => {
@@ -35,7 +33,6 @@ describe('API CiberHeroes', () => {
 
   test('POST /health responde 404', async () => {
     const response = await request(app).post('/health');
-
     expect(response.statusCode).toBe(404);
   });
 });

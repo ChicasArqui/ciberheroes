@@ -5,9 +5,18 @@ import Header from './components/Header.jsx';
 import PipoScene from './components/PipoScene.jsx';
 import WelcomePage from './pages/WelcomePage.jsx';
 import RoleSelectionPage from './pages/RoleSelectionPage.jsx';
+import GuardianRegisterPage from './pages/GuardianRegisterPage.jsx';
+import GuardianLoginPage from './pages/GuardianLoginPage.jsx';
 
+function getScreenFromHash() {
+  if (window.location.hash === '#roles') return 'roles';
+  if (window.location.hash === '#guardian-register') return 'guardian-register';
+  if (window.location.hash === '#guardian-login') return 'guardian-login';
+  return 'welcome';
+}
 export default function App() {
-  const [screen, setScreen] = useState(window.location.hash === '#roles' ? 'roles' : 'welcome');
+  const [screen, setScreen] = useState(getScreenFromHash);
+  const [pipoSceneOverride, setPipoSceneOverride] = useState('');
   const [notice, setNotice] = useState('');
   const [serviceStatus, setServiceStatus] = useState({
     server: 'checking',
@@ -32,7 +41,8 @@ export default function App() {
   useEffect(() => {
     const handlePopState = () => {
       setNotice('');
-      setScreen(window.location.hash === '#roles' ? 'roles' : 'welcome');
+      setScreen(getScreenFromHash);
+      setPipoSceneOverride('');
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
@@ -40,33 +50,71 @@ export default function App() {
 
   const openRoleSelection = () => {
     setNotice('');
+    setPipoSceneOverride('');
     setScreen('roles');
     window.history.pushState({ screen: 'roles' }, '', '#roles');
   };
 
   const goWelcome = () => {
     setNotice('');
+    setPipoSceneOverride('');
     setScreen('welcome');
     window.history.pushState({ screen: 'welcome' }, '', '#inicio');
   };
 
-  const showScopeNotice = (role) => {
-    const roleName = role === 'hero' ? 'CiberHéroe' : 'Guardián';
-    setNotice(`Has elegido el espacio de ${roleName}. La siguiente pantalla se integrará en una tarea posterior.`);
+  const openGuardianRegister = () => {
+    setNotice('');
+    setPipoSceneOverride('');
+    setScreen('guardian-register');
+    window.history.pushState(
+      { screen: 'guardian-register' },
+      '',
+      '#guardian-register'
+    );
   };
 
-  const showAbout = () => setNotice('CiberHéroes es una experiencia educativa para niñas y niños de 8 a 13 años, acompañada por un adulto de confianza.');
-  const showLoginScope = () => setNotice('El inicio de sesión se integrará cuando esté listo el backend. En esta entrega solo preparamos la bienvenida y la selección de rol.');
+  const openGuardianLogin = () => {
+    setNotice('');
+    setPipoSceneOverride('');
+    setScreen('guardian-login');
+    window.history.pushState(
+      { screen: 'guardian-login' },
+      '',
+      '#guardian-login'
+    );
+  };
+
+  const showScopeNotice = (role) => {
+    if (role === 'guardian') {
+      openGuardianRegister();
+      return;
+    }
+
+    setNotice('El acceso de CiberHéroe se integrará en una tarea posterior.');
+  };
+
+  const showAbout = () => setNotice(
+    'CiberHéroes es una experiencia educativa para niñas y niños de 8 a 13 años, acompañada por un adulto de confianza.'
+  );
 
   return (
     <div className="app-shell">
-      <Header onAbout={showAbout} onLogin={showLoginScope} />
+      <Header onAbout={showAbout} onLogin={openGuardianLogin} />
       <main className="main-content">
         <div className={`stage ${screen === 'welcome' ? 'welcome-stage' : 'roles-stage'}`}>
           <section className="content" aria-live="polite">
-            {screen === 'welcome'
-              ? <WelcomePage onStart={openRoleSelection} onLogin={showLoginScope} />
-              : <RoleSelectionPage onBack={goWelcome} onRole={showScopeNotice} />}
+            {screen === 'welcome' ? (
+              <WelcomePage onStart={openRoleSelection} onLogin={openGuardianLogin} />
+            ) : screen === 'roles' ? (
+              <RoleSelectionPage onBack={goWelcome} onRole={showScopeNotice} />
+            ) : screen === 'guardian-register' ? (
+              <GuardianRegisterPage
+                onLogin={openGuardianLogin}
+                onRegistrationComplete={() => setPipoSceneOverride('guardian-success')}
+              />
+            ) : (
+              <GuardianLoginPage onRegister={openGuardianRegister} />
+            )}
             {notice && (
               <div className="scope-notice" role="status">
                 <Info size={19} aria-hidden="true" />
@@ -75,7 +123,7 @@ export default function App() {
               </div>
             )}
           </section>
-          <PipoScene welcome={screen === 'welcome'} />
+          <PipoScene scene={pipoSceneOverride || screen} />
         </div>
       </main>
       <footer className="site-footer">
