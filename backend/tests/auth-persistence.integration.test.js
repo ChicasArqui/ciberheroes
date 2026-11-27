@@ -227,6 +227,9 @@ describeWithMongo('integración real: registro, MongoDB y sesión', () => {
     const counters = mongoose.connection.db.collection('auth_login_identity');
     const documents = await counters.find().toArray();
     expect(documents).toHaveLength(1);
+    expect(documents[0].points).toBe(5);
+    const accountCounter = await mongoose.connection.db.collection('auth_login_account').findOne();
+    expect(accountCounter.points).toBe(5);
     expect(JSON.stringify(documents)).not.toContain(input.email);
     expect(JSON.stringify(documents)).not.toContain(input.password);
     expect(await counters.indexes()).toEqual(expect.arrayContaining([
@@ -256,13 +259,21 @@ describeWithMongo('integración real: registro, MongoDB y sesión', () => {
     const second = await protectedApp();
     await request(second).post('/api/auth/login').set('X-Forwarded-For', '192.0.2.100')
       .send(input).expect(403);
+    verify.mockRejectedValueOnce(new Error('fallo ficticio del proveedor'));
+    await request(second).post('/api/auth/login').set('X-Forwarded-For', '192.0.2.100')
+      .send({ ...input, challengeToken: 'token-fallo-proveedor' }).expect(503);
+    const accounts = mongoose.connection.db.collection('auth_login_account');
+    expect((await accounts.findOne()).points).toBe(10);
+    const identityCounts = await mongoose.connection.db.collection('auth_login_identity').find().toArray();
+    expect(identityCounts.map(counter => counter.points).sort((a, b) => a - b))
+      .toEqual([0, ...Array(10).fill(1)]);
     const responses = await Promise.all([first, second].map(server =>
       request(server).post('/api/auth/login').set('X-Forwarded-For', '192.0.2.100')
         .send({ ...input, challengeToken: 'token-concurrente-ficticio' })));
     expect(responses.map(response => response.status).sort()).toEqual([401, 403]);
-    expect(verify).toHaveBeenCalledTimes(1);
+    expect(verify).toHaveBeenCalledTimes(2);
     const tokens = await mongoose.connection.db.collection('auth_challenge_tokens').find().toArray();
-    expect(tokens).toHaveLength(1);
+    expect(tokens).toHaveLength(2);
     expect(JSON.stringify(tokens)).not.toContain('token-concurrente-ficticio');
   });
 });

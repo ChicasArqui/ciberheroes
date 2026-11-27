@@ -66,6 +66,9 @@ function createAuthRateLimiters({
         await limiter.consume(id);
         reservations.push([limiter, id]);
       } catch (error) {
+        // En estos almacenes (sin bloqueo previo en memoria), consume incrementa
+        // antes de rechazar por exceso. Registrar permite revertir solo ese punto;
+        // un error del almacén no es una reserva confirmada.
         if (error instanceof RateLimiterRes) reservations.push([limiter, id]);
         throw error;
       }

@@ -26,6 +26,56 @@ afterEach(() => jest.restoreAllMocks());
 
 const post = (route, body = input) => request(app).post(`/api/auth/${route}`).send(body);
 
+// Usar el almacén real permite verificar si consume() escribió antes de rechazar.
+function observeCounters() {
+  const counters = new Map();
+  const consume = RateLimiterMemory.prototype.consume;
+  jest.spyOn(RateLimiterMemory.prototype, 'consume').mockImplementation(function (id, ...args) {
+    counters.set(this.keyPrefix, { limiter: this, id });
+    return consume.call(this, id, ...args);
+  });
+  return async name => {
+    const { limiter, id } = counters.get(name);
+    return (await limiter.get(id)).consumedPoints;
+  };
+}
+
+test('reintentos bloqueados no devuelven oportunidades ni reducen los cinco fallos previos', async () => {
+  const count = observeCounters();
+  for (let i = 0; i < 5; i++) await post('login').expect(401);
+  for (let i = 0; i < 5; i++) {
+    await post('login').expect(429);
+    expect(await count('auth_login_identity')).toBe(5);
+    expect(await count('auth_login_account')).toBe(5);
+  }
+  expect(loginGuardian).toHaveBeenCalledTimes(5);
+});
+
+test('si el segundo almacén falla antes de escribir, solo devuelve el primer consumo', async () => {
+  const reward = jest.spyOn(RateLimiterMemory.prototype, 'reward');
+  const consume = RateLimiterMemory.prototype.consume;
+  let identity;
+  jest.spyOn(RateLimiterMemory.prototype, 'consume').mockImplementation(function (id, ...args) {
+    if (this.keyPrefix === 'auth_login_identity') identity = { limiter: this, id };
+    if (this.keyPrefix === 'auth_login_account') return Promise.reject(new Error('fallo antes de escribir'));
+    return consume.call(this, id, ...args);
+  });
+  await post('login').expect(503);
+  expect(reward).toHaveBeenCalledTimes(1);
+  expect(reward.mock.contexts[0].keyPrefix).toBe('auth_login_identity');
+  expect((await identity.limiter.get(identity.id)).consumedPoints).toBe(0);
+  expect(loginGuardian).not.toHaveBeenCalled();
+});
+
+test('un rechazo por exceso sí incrementa el almacén real y se puede revertir exactamente ese punto', async () => {
+  const limiter = new RateLimiterMemory({ points: 5, duration: 900 });
+  for (let i = 0; i < 5; i++) await limiter.consume('ficticio');
+  await expect(limiter.consume('ficticio')).rejects.toMatchObject({ consumedPoints: 6 });
+  expect((await limiter.get('ficticio')).consumedPoints).toBe(6);
+  await limiter.reward('ficticio');
+  expect((await limiter.get('ficticio')).consumedPoints).toBe(5);
+});
+
 test('permite cinco fallos y rechaza el sexto antes de comprobar credenciales', async () => {
   for (let i = 0; i < 5; i++) await post('login').expect(401);
   const blocked = await post('login').expect(429);
@@ -167,11 +217,14 @@ test('un token inválido o demasiado largo no permite comprobar la contraseña',
 test('un fallo del proveedor rechaza el acceso y devuelve la reserva', async () => {
   const verify = jest.fn().mockRejectedValue(new Error('fallo proveedor secreto'));
   challengeApp({ publicConfig: () => ({ siteKey: 'publica-ficticia' }), verify });
+  const count = observeCounters();
   await failFromSeveralIps();
   for (let i = 0; i < 6; i++) {
     const result = await post('login', { ...input, challengeToken: `token-${i}` })
       .set('X-Forwarded-For', '192.0.2.100').expect(503);
     expect(result.body).toEqual({ error: 'AUTH_SERVICE_UNAVAILABLE' });
+    expect(await count('auth_login_identity')).toBe(0);
+    expect(await count('auth_login_account')).toBe(10);
   }
   verify.mockResolvedValue(true);
   await post('login', { ...input, challengeToken: 'token-valido' })
