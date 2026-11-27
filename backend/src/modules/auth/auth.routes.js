@@ -5,10 +5,12 @@ const {
   logoutGuardianController
 } = require('./auth.controller');
 
-const router = express.Router();
+function createAuthRoutes(rateLimiters) {
+  const router = express.Router();
+  router.post('/register', rateLimiters.register, registerGuardianController);
+  router.post('/login', rateLimiters.login, loginGuardianController);
+  router.post('/logout', logoutGuardianController);
+  return router;
+}
 
-router.post('/register', registerGuardianController);
-router.post('/login', loginGuardianController);
-router.post('/logout', logoutGuardianController);
-
-module.exports = router;
+module.exports = createAuthRoutes;

@@ -34,6 +34,8 @@ async function apiRequest(path, options = {}) {
     const error = new Error(data.error || 'API_REQUEST_FAILED');
     error.code = data.error || 'API_REQUEST_FAILED';
     error.status = response.status;
+    error.retryAfter = data.retryAfter;
+    error.challenge = data.challenge;
     throw error;
   }
 
@@ -47,10 +49,10 @@ export function registerGuardian({ email, password }) {
   });
 }
 
-export function loginGuardian({ email, password }) {
+export function loginGuardian({ email, password, challengeToken }) {
   return apiRequest('/api/auth/login', {
     method: 'POST',
-    body: JSON.stringify({ email, password })
+    body: JSON.stringify({ email, password, ...(challengeToken ? { challengeToken } : {}) })
   });
 }
 

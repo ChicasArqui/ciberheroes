@@ -61,6 +61,9 @@ export default function GuardianRegisterPage({ onLogin, onRegistrationComplete }
                 setFormMessage('Ya existe una cuenta con ese correo.');
             } else if (error.code === 'INVALID_INPUT') {
                 setFormMessage('Revisa el correo y los requisitos de contraseña.');
+            } else if (error.code === 'TOO_MANY_REQUESTS') {
+                const minutes = Math.max(1, Math.ceil(error.retryAfter / 60) || 1);
+                setFormMessage(`Demasiadas solicitudes de registro. Vuelve a intentarlo en ${minutes} min.`);
             } else {
                 setFormMessage('No pudimos crear la cuenta. Inténtalo más tarde.');
             }

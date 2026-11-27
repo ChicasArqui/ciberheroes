@@ -1,0 +1,93 @@
+# Protección del acceso del Guardián
+
+## Política aplicada
+
+| Operación | Criterio | Límite |
+| --- | --- | --- |
+| Login | Fallos por correo e IP | 5 por 15 minutos |
+| Login | Solicitudes por IP | 30 por 15 minutos |
+| Login | Fallos por correo entre todas las IP | Tras 10 en 15 minutos, requiere Turnstile |
+| Registro | Solicitudes por IP | 20 por hora |
+| Registro | Solicitudes por correo | 3 por hora |
+
+Las ventanas empiezan con la primera solicitud. Un rechazo no prolonga la ventana.
+Solo `INVALID_CREDENTIALS` conserva las reservas de fallo del login; las entradas
+inválidas y los errores internos siguen sujetos al límite general de IP, pero no
+consumen oportunidades de contraseña. Un acierto reinicia los fallos de correo e IP,
+sin borrar los fallos acumulados desde otras direcciones ni la cuota de red.
+
+Los límites por IP se comparten entre personas que salen a Internet por la misma
+dirección pública. Estos valores son decisiones del equipo, no cifras impuestas por OWASP.
+Se pueden ajustar en `AUTH_RATE_LIMITS`, dentro de `backend/src/modules/auth/auth-rate-limit.js`.
+
+## Activar Turnstile en Dev
+
+1. Crear una cuenta de Cloudflare y abrir **Turnstile** en su panel.
+2. Añadir un widget para CiberHéroes Dev, de tipo **Managed**.
+3. Autorizar el hostname `miapp-dev-0pav.onrender.com`, sin protocolo ni ruta.
+   Para pruebas manuales locales, autorizar también `localhost` y `127.0.0.1`
+   en el widget de desarrollo; usar otro widget para producción.
+4. Copiar la **site key** (pública) y la **secret key** (privada).
+5. Quien tenga acceso a Render debe abrir **miapp-dev → Environment → Edit** y añadir:
+
+   ```text
+   TURNSTILE_SITE_KEY=<site key del widget Dev>
+   TURNSTILE_SECRET_KEY=<secret key del widget Dev>
+   TURNSTILE_HOSTNAMES=miapp-dev-0pav.onrender.com
+   ```
+
+6. Guardar y aplicar las variables al despliegue que contenga esta implementación.
+7. Para ejecutar manualmente en local, configurar las claves del widget Dev en
+   `backend/.env` y `TURNSTILE_HOSTNAMES=localhost,127.0.0.1`.
+   `.env.example` contiene únicamente los nombres de las variables.
+
+No subir las claves privadas al repositorio ni incluirlas en capturas. La site key
+se envía al navegador cuando se exige la comprobación. El registro de la cuenta
+Cloudflare y las claves son configuración externa necesaria: tener el código no
+activa automáticamente el servicio. El plan Free de Turnstile permite verificaciones
+ilimitadas y no exige alojar la aplicación en Cloudflare.
+
+## Validación y fallos
+
+El backend valida el token en Siteverify con un tiempo máximo de ocho segundos.
+Exige el hostname configurado, la acción `guardian-login` y un contexto HMAC que
+vincula el token al correo y la IP. Además reserva atómicamente el token en MongoDB
+durante cinco minutos para impedir su reutilización entre instancias; la validación
+del proveedor por sí sola tiene detección de reutilización eventualmente consistente.
+
+Si falta configuración o falla el proveedor cuando la comprobación es necesaria,
+la respuesta es `503 AUTH_SERVICE_UNAVAILABLE`. Un token inválido o vencido produce
+`403 CHALLENGE_REQUIRED` y exige repetir la comprobación. Nunca se permite saltarla.
+Los límites temporales responden `429 TOO_MANY_REQUESTS` con `Retry-After` en segundos.
+
+Los contadores están en la misma base configurada por `MONGODB_URI`. El servidor
+espera la creación de los índices TTL y únicos antes de escuchar. La biblioteca
+comprueba el vencimiento incluso si MongoDB aún no ha borrado el documento.
+Los identificadores usan HMAC con `SESSION_SECRET`; mantener esta clave entre
+reinicios conserva la identificación de los contadores. Rotarla cambia dichas claves
+y también invalida las cookies firmadas anteriormente.
+
+## Comprobaciones antes de aceptar en Dev
+
+- Confirmar que `/health` identifica el commit que contiene estos cambios y MongoDB conectado.
+- Probar registro, login, recuperación de sesión y logout con cuentas ficticias.
+- Comprobar cookie `HttpOnly`, `Secure` y `SameSite=Lax` mediante HTTPS.
+- Verificar que `trust proxy: 1` corresponde con el proxy real de Render y que
+  distintas redes no se identifican todas como una única IP interna.
+- Tras diez fallos de un correo desde distintas IP, comprobar Turnstile real:
+  solución válida, vencimiento y nuevo intento después de una contraseña incorrecta.
+- Registrar resultados y límites sin capturar cookies, tokens, contraseñas o URI privadas.
+
+`npm run test:mongo` usa exclusivamente MongoDB local y una base de pruebas. Las
+pruebas de Turnstile simulan Siteverify y el SDK del navegador; no requieren claves,
+no contactan el proveedor y no sustituyen la comprobación del widget real en Dev.
+
+Esta implementación conserva el contrato actual de registro. No añade verificación
+del correo ni MFA. El control de intentos y Turnstile no prueban la propiedad del correo.
+
+## Referencias
+
+- [OWASP: Login Throttling](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html#login-throttling)
+- [Cloudflare: planes](https://developers.cloudflare.com/turnstile/plans/)
+- [Cloudflare: validación del token](https://developers.cloudflare.com/turnstile/get-started/server-side-validation/)
+- [Express: proxies](https://expressjs.com/en/guide/behind-proxies/)

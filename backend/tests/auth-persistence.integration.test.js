@@ -6,6 +6,7 @@ const baseApp = require('../src/app');
 const { createSessionMiddleware } = require('../src/config/session');
 const Guardian = require('../src/modules/auth/guardian.model');
 const Family = require('../src/modules/profiles/family.model');
+const { createAuthRateLimiters } = require('../src/modules/auth/auth-rate-limit');
 
 // Activación explícita: una URI de desarrollo existente no debe activar limpieza.
 const describeWithMongo = process.env.RUN_MONGO_INTEGRATION === '1'
@@ -16,6 +17,15 @@ describeWithMongo('integración real: registro, MongoDB y sesión', () => {
   let app;
   let agent;
   let sessionStore;
+  let sessionMiddleware;
+  function mongoRateLimiters(challengeVerifier) {
+    return createAuthRateLimiters({
+      storeClient: mongoose.connection.getClient(),
+      dbName: mongoose.connection.name,
+      secret: process.env.SESSION_SECRET,
+      challengeVerifier
+    });
+  }
 
   beforeAll(async () => {
     const mongoUri = new URL(process.env.MONGODB_URI);
@@ -46,10 +56,19 @@ describeWithMongo('integración real: registro, MongoDB y sesión', () => {
       collectionName: 'sessions',
       ttl: 60 * 60
     });
-    const sessionMiddleware = createSessionMiddleware({ store: sessionStore });
-    app = baseApp.createApp({ sessionMiddleware });
+    sessionMiddleware = createSessionMiddleware({ store: sessionStore });
+    const authRateLimiters = mongoRateLimiters();
+    await authRateLimiters.ready;
+    app = baseApp.createApp({ sessionMiddleware, authRateLimiters });
     agent = request.agent(app);
   }, 30000);
+
+  beforeEach(async () => {
+    for (const name of ['auth_login_ip', 'auth_login_identity', 'auth_login_account',
+      'auth_challenge_tokens', 'auth_register_ip', 'auth_register_email']) {
+      await mongoose.connection.db.collection(name).deleteMany({});
+    }
+  });
 
   afterAll(async () => {
     if (mongoose.connection.readyState === 1) {
@@ -190,5 +209,60 @@ describeWithMongo('integración real: registro, MongoDB y sesión', () => {
     } finally {
       failingWrite.mockRestore();
     }
+  });
+
+  test('el límite persiste entre instancias y expira sin guardar correo ni contraseña', async () => {
+    const input = { email: 'limite@example.com', password: 'ClaveFicticia!12345' };
+    // Se lanzan juntas para comprobar también el límite con concurrencia real.
+    const responses = await Promise.all(Array.from({ length: 6 }, () =>
+      request(app).post('/api/auth/login').send(input)));
+    expect(responses.filter(response => response.status === 401)).toHaveLength(5);
+    expect(responses.filter(response => response.status === 429)).toHaveLength(1);
+
+    const authRateLimiters = mongoRateLimiters();
+    await authRateLimiters.ready;
+    const restarted = baseApp.createApp({ sessionMiddleware, authRateLimiters });
+    await request(restarted).post('/api/auth/login').send(input).expect(429);
+
+    const counters = mongoose.connection.db.collection('auth_login_identity');
+    const documents = await counters.find().toArray();
+    expect(documents).toHaveLength(1);
+    expect(JSON.stringify(documents)).not.toContain(input.email);
+    expect(JSON.stringify(documents)).not.toContain(input.password);
+    expect(await counters.indexes()).toEqual(expect.arrayContaining([
+      expect.objectContaining({ expireAfterSeconds: 0 }),
+      expect.objectContaining({ unique: true })
+    ]));
+    await counters.updateMany({}, { $set: { expire: new Date(Date.now() - 1000) } });
+    await request(restarted).post('/api/auth/login').send(input).expect(401);
+  });
+
+  test('Mongo conserva la comprobación por cuenta y el uso único del token entre instancias', async () => {
+    const verify = jest.fn().mockResolvedValue(true);
+    const verifier = { publicConfig: cData => ({ siteKey: 'publica-ficticia', cData }), verify };
+    async function protectedApp() {
+      const authRateLimiters = mongoRateLimiters(verifier);
+      await authRateLimiters.ready;
+      const result = baseApp.createApp({ sessionMiddleware, authRateLimiters });
+      result.set('trust proxy', 1);
+      return result;
+    }
+    const first = await protectedApp();
+    const input = { email: 'distribuido@example.com', password: 'ClaveFicticia!12345' };
+    for (let i = 0; i < 10; i++) {
+      await request(first).post('/api/auth/login').set('X-Forwarded-For', `192.0.2.${i + 1}`)
+        .send(input).expect(401);
+    }
+    const second = await protectedApp();
+    await request(second).post('/api/auth/login').set('X-Forwarded-For', '192.0.2.100')
+      .send(input).expect(403);
+    const responses = await Promise.all([first, second].map(server =>
+      request(server).post('/api/auth/login').set('X-Forwarded-For', '192.0.2.100')
+        .send({ ...input, challengeToken: 'token-concurrente-ficticio' })));
+    expect(responses.map(response => response.status).sort()).toEqual([401, 403]);
+    expect(verify).toHaveBeenCalledTimes(1);
+    const tokens = await mongoose.connection.db.collection('auth_challenge_tokens').find().toArray();
+    expect(tokens).toHaveLength(1);
+    expect(JSON.stringify(tokens)).not.toContain('token-concurrente-ficticio');
   });
 });

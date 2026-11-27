@@ -131,3 +131,8 @@
   outline: 2px solid var(--purple);
   border-radius: 6px;
 }
+
+.guardian-security-check {
+  min-width: 0;
+  max-width: 100%;
+}

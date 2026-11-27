@@ -3,11 +3,12 @@ const path = require('node:path');
 const { getDatabaseStatus } = require('./config/database');
 const learningRoutes = require('./modules/learning/learning.routes');
 const authRoutes = require('./modules/auth/auth.routes');
+const { createAuthRateLimiters } = require('./modules/auth/auth-rate-limit');
 const guardianRoutes = require('./modules/profiles/guardian.routes');
 
 const frontendDist = path.resolve(__dirname, '../../frontend/dist');
 
-function createApp({ sessionMiddleware } = {}) {
+function createApp({ sessionMiddleware, authRateLimiters = createAuthRateLimiters() } = {}) {
   const app = express();
 
   if (process.env.NODE_ENV === 'production') {
@@ -21,7 +22,7 @@ function createApp({ sessionMiddleware } = {}) {
   }
 
   app.use('/api/lecciones', learningRoutes);
-  app.use('/api/auth', authRoutes);
+  app.use('/api/auth', authRoutes(authRateLimiters));
   app.use('/api/guardian', guardianRoutes);
 
   app.get('/health', (req, res) => {

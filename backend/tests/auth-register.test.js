@@ -26,12 +26,11 @@ function fakeSessionMiddleware(req, res, next) {
   next();
 }
 
-const app = baseApp.createApp({
-  sessionMiddleware: fakeSessionMiddleware
-});
+let app;
 
 describe('POST /api/auth/register', () => {
   beforeEach(() => {
+    app = baseApp.createApp({ sessionMiddleware: fakeSessionMiddleware });
     jest.clearAllMocks();
     savedGuardianId = undefined;
     regenerateError = null;

@@ -44,6 +44,7 @@ async function registerGuardianController(req, res) {
 async function loginGuardianController(req, res) {
   try {
     const result = await loginGuardian(req.body);
+    await res.locals.settleLoginAttempt?.('success');
 
     req.session.regenerate((sessionError) => {
       if (sessionError) {
@@ -65,6 +66,13 @@ async function loginGuardianController(req, res) {
       });
     });
   } catch (error) {
+    try {
+      await res.locals.settleLoginAttempt?.(
+        error.code === 'INVALID_CREDENTIALS' ? 'failure' : 'error'
+      );
+    } catch {
+      return res.status(503).json({ error: 'AUTH_SERVICE_UNAVAILABLE' });
+    }
     if (error.code === 'INVALID_INPUT') {
       return res.status(400).json({ error: 'INVALID_INPUT' });
     }

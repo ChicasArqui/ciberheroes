@@ -5,6 +5,7 @@ import {
     logoutGuardian
 } from '../services/api.js';
 import FamilyCodeDisplay from '../components/FamilyCodeDisplay.jsx';
+import SecurityChallenge from '../components/SecurityChallenge.jsx';
 import useGuardianSession from '../hooks/useGuardianSession.js';
 import './GuardianRegisterPage.css';
 
@@ -14,6 +15,9 @@ export default function GuardianLoginPage({ onRegister }) {
     const [showPassword, setShowPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formMessage, setFormMessage] = useState('');
+    const [challenge, setChallenge] = useState(null);
+    const [challengeToken, setChallengeToken] = useState('');
+    const [challengeAttempt, setChallengeAttempt] = useState(0);
     const {
         familyCode, setFamilyCode, isAuthenticated, setIsAuthenticated,
         isCheckingSession, sessionError
@@ -26,19 +30,29 @@ export default function GuardianLoginPage({ onRegister }) {
         setFamilyCode('');
 
         try {
-            await loginGuardian({ email, password });
+            await loginGuardian({ email, password, ...(challengeToken ? { challengeToken } : {}) });
+            setChallenge(null);
+            setChallengeToken('');
             setIsAuthenticated(true);
             setPassword('');
             setShowPassword(false);
         } catch (error) {
-            if (error.code === 'INVALID_CREDENTIALS') {
+            if (error.code === 'CHALLENGE_REQUIRED' && error.challenge) {
+                setChallenge(error.challenge);
+                setFormMessage('Necesitamos una comprobación de seguridad para continuar.');
+            } else if (error.code === 'INVALID_CREDENTIALS') {
                 setFormMessage('Correo o contraseña incorrectos.');
             } else if (error.code === 'INVALID_INPUT') {
                 setFormMessage('Ingresa un correo válido y tu contraseña.');
+            } else if (error.code === 'TOO_MANY_REQUESTS') {
+                const minutes = Math.max(1, Math.ceil(error.retryAfter / 60) || 1);
+                setFormMessage(`Demasiados intentos. Vuelve a intentarlo en ${minutes} min.`);
             } else {
                 setFormMessage('No pudimos iniciar sesión. Inténtalo más tarde.');
             }
 
+            setChallengeToken('');
+            setChallengeAttempt(value => value + 1);
             setIsSubmitting(false);
             return;
         }
@@ -67,6 +81,8 @@ export default function GuardianLoginPage({ onRegister }) {
             setPassword('');
             setShowPassword(false);
             setFormMessage('Sesión cerrada.');
+            setChallenge(null);
+            setChallengeToken('');
         } catch {
             setFormMessage('No pudimos cerrar sesión. Inténtalo de nuevo.');
         } finally {
@@ -95,7 +111,11 @@ export default function GuardianLoginPage({ onRegister }) {
                         type="email"
                         autoComplete="email"
                         value={email}
-                        onChange={(event) => setEmail(event.target.value)}
+                        onChange={(event) => {
+                            setEmail(event.target.value);
+                            setChallenge(null);
+                            setChallengeToken('');
+                        }}
                         disabled={isAuthenticated || isSubmitting}
                         required
                     />
@@ -131,10 +151,16 @@ export default function GuardianLoginPage({ onRegister }) {
                     </div>
                 </div>
 
+                {challenge && !isAuthenticated && <SecurityChallenge
+                    key={challengeAttempt}
+                    config={challenge}
+                    onToken={setChallengeToken}
+                />}
+
                 <button
                     className="button button-primary guardian-submit"
                     type="submit"
-                    disabled={isAuthenticated || isSubmitting}
+                    disabled={isAuthenticated || isSubmitting || Boolean(challenge && !challengeToken)}
                 >
                     {isSubmitting ? 'Ingresando…' : 'Iniciar sesión'}
                 </button>
