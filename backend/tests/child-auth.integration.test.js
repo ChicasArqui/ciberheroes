@@ -43,11 +43,13 @@ describeWithMongo('integración real: perfiles y autenticación infantil', () =>
   const previousAutoIndex = mongoose.get('autoIndex');
 
   beforeAll(async () => {
-    if (!process.env.MONGODB_URI) {
-      throw new Error('MONGODB_URI debe configurarse para esta prueba.');
+    const childMongoUri = process.env.CHILD_AUTH_MONGODB_URI;
+
+    if (!childMongoUri) {
+      throw new Error('CHILD_AUTH_MONGODB_URI debe configurarse para esta prueba.');
     }
 
-    const mongoUri = new URL(process.env.MONGODB_URI);
+    const mongoUri = new URL(childMongoUri);
     const databaseName = mongoUri.pathname.slice(1);
     const isLocalMongo = ['127.0.0.1', 'localhost'].includes(
       mongoUri.hostname
@@ -68,7 +70,7 @@ describeWithMongo('integración real: perfiles y autenticación infantil', () =>
 
     mongoose.set('autoIndex', false);
 
-    await mongoose.connect(process.env.MONGODB_URI, {
+    await mongoose.connect(childMongoUri, {
       serverSelectionTimeoutMS: 10000,
       runtimeAdapters: { os }
     });
