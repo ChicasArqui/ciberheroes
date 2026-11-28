@@ -29,11 +29,11 @@ function createResponse() {
       return this;
     },
     set(name, value) {
-      this.headers[name] = value;
+      Object.defineProperty(this.headers, name, { value, enumerable: true, configurable: true, writable: true });
       return this;
     },
     clearCookie(name, options) {
-      this.cookies[name] = options;
+      Object.defineProperty(this.cookies, name, { value: options, enumerable: true, configurable: true, writable: true });
       return this;
     }
   };
