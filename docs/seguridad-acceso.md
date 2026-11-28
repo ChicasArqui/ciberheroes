@@ -85,8 +85,15 @@ y también invalida las cookies firmadas anteriormente.
 - Confirmar que `/health` identifica el commit que contiene estos cambios y MongoDB conectado.
 - Probar registro, login, recuperación de sesión y logout con cuentas ficticias.
 - Comprobar cookie `HttpOnly`, `Secure` y `SameSite=Lax` mediante HTTPS.
-- Verificar que `trust proxy: 1` corresponde con el proxy real de Render y que
-  distintas redes no se identifican todas como una única IP interna.
+- Render añade automáticamente `RENDER=true`. En ese entorno público, los límites
+  y Turnstile usan `CF-Connecting-IP`, que Cloudflare establece para el visitante.
+  Si falta o no es una IP válida, la autenticación responde 503. Fuera de Render
+  se usa `req.ip` y se ignora ese encabezado. No establecer `RENDER=true` en un
+  servidor que se pueda alcanzar directamente sin ese ingreso de confianza.
+- `trust proxy: 1` se conserva para el protocolo HTTPS; el contador de intentos
+  no depende de que ese número represente todos los proxies de Render.
+  Verificar en Dev que el sexto fallo de un correo desde una misma red devuelve
+  429, incluso si se envían distintos valores de `X-Forwarded-For`.
 - Tras diez fallos de un correo desde distintas IP, comprobar Turnstile real:
   solución válida, vencimiento y nuevo intento después de una contraseña incorrecta.
 - Registrar resultados y límites sin capturar cookies, tokens, contraseñas o URI privadas.
@@ -104,3 +111,4 @@ del correo ni MFA. El control de intentos y Turnstile no prueban la propiedad de
 - [Cloudflare: planes](https://developers.cloudflare.com/turnstile/plans/)
 - [Cloudflare: validación del token](https://developers.cloudflare.com/turnstile/get-started/server-side-validation/)
 - [Express: proxies](https://expressjs.com/en/guide/behind-proxies/)
+- [Render: encabezado del visitante en servicios públicos](https://render.com/articles/host-pocketbase-on-render)
