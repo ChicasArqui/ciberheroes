@@ -139,7 +139,7 @@ export default function GuardianSpacePage({ onLogin, onHome }) {
     }
   }
 
-  if (sessionStatus === 'checking') return <main className="guardian-space-placeholder guardian-space-status"><p role="status">Preparando tu espacio familiar…</p></main>;
+  if (sessionStatus === 'checking') return <main className="guardian-space-placeholder guardian-space-status"><p role="status">Comprobando tu sesión del Guardián…</p></main>;
   if (sessionStatus === 'error') return <main className="guardian-space-placeholder guardian-space-status"><p role="alert">{pageError}</p><button className="cib20-primary-button" type="button" onClick={loadSpace}><RefreshCw size={17} /> Reintentar</button><button className="cib20-secondary-button" type="button" onClick={onHome}>Volver al inicio</button></main>;
 
   if (showForm) return <main className="guardian-dashboard"><ProfileForm initialProfile={editingProfile} onCancel={() => { setShowForm(false); setEditingProfile(null); }} onSave={saveProfile} isSaving={isSaving} /></main>;
