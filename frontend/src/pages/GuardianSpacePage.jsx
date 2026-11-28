@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ArrowLeft, Check, Copy, LogOut, Plus, RefreshCw, ShieldCheck, UsersRound, Pencil, X, LockKeyhole, Sparkles } from 'lucide-react';
-import { createChildProfile, getChildProfiles, getGuardianFamily, logoutGuardian, updateChildProfile } from '../services/api.js';
+import { ArrowLeft, Check, Copy, LogOut, Plus, RefreshCw, ShieldCheck, UsersRound, Pencil, X, LockKeyhole, Sparkles, Trash2 } from 'lucide-react';
+import { createChildProfile, getChildProfiles, getGuardianFamily, logoutGuardian, updateChildProfile, deleteChildProfile } from '../services/api.js';
 import './GuardianSpacePage.css';
 
 const AVATARS = [
@@ -93,6 +93,8 @@ export default function GuardianSpacePage({ onLogin, onHome }) {
   const [isSaving, setIsSaving] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [copyMessage, setCopyMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [deletingProfileId, setDeletingProfileId] = useState(null);
 
   const loadSpace = useCallback(async () => {
     setSessionStatus('checking'); setPageError('');
@@ -111,16 +113,45 @@ export default function GuardianSpacePage({ onLogin, onHome }) {
 
   async function saveProfile(values) {
     setIsSaving(true);
+    setSuccessMessage('');
     try {
       if (editingProfile) {
         const result = await updateChildProfile(editingProfile.id, { nickname: values.nickname, avatarId: values.avatarId });
-        setProfiles((current) => current.map((profile) => profile.id === editingProfile.id ? { ...result.profile, id: result.profile.id || result.profile._id || editingProfile.id } : profile));
+        const updatedProfile = { ...result.profile, id: result.profile.id || result.profile._id || editingProfile.id };
+        setProfiles((current) => current.map((profile) => profile.id === editingProfile.id ? updatedProfile : profile));
+        setSuccessMessage('¡Perfil de CiberHéroe actualizado correctamente!');
       } else {
         const result = await createChildProfile(values);
-        setProfiles((current) => [...current, { ...result.profile, id: result.profile.id || result.profile._id }]);
+        const createdProfile = { ...result.profile, id: result.profile.id || result.profile._id };
+        if (!createdProfile.id) throw new Error('PROFILE_RESPONSE_INVALID');
+        setProfiles((current) => [...current, createdProfile]);
+        setSuccessMessage('¡CiberHéroe creado correctamente!');
       }
-      setShowForm(false); setEditingProfile(null);
+      setShowForm(false);
+      setEditingProfile(null);
     } finally { setIsSaving(false); }
+  }
+
+  async function handleDeleteProfile(profile) {
+    const confirmed = window.confirm(`¿Estás seguro de eliminar el perfil de ${profile.nickname}?`);
+    if (!confirmed) return;
+    setDeletingProfileId(profile.id);
+    setPageError('');
+    setSuccessMessage('');
+    try {
+      await deleteChildProfile(profile.id);
+      setProfiles((current) => current.filter((item) => item.id !== profile.id));
+      setSuccessMessage(`El perfil de ${profile.nickname} se eliminó correctamente.`);
+    } catch (error) {
+      const messages = {
+        PROFILE_NOT_FOUND: 'Este perfil ya no existe. Actualiza la lista.',
+        INVALID_PROFILE_ID: 'No se pudo identificar el perfil que deseas eliminar.',
+        FAMILY_NOT_FOUND: 'No encontramos tu familia. Vuelve a iniciar sesión.',
+      };
+      setPageError(messages[error.code] || 'No pudimos eliminar el perfil. Inténtalo otra vez.');
+    } finally {
+      setDeletingProfileId(null);
+    }
   }
   async function copyFamilyCode() {
     try {
@@ -159,11 +190,12 @@ export default function GuardianSpacePage({ onLogin, onHome }) {
       </section>
       <section className="guardian-profiles-section">
         <div className="guardian-section-heading"><div><p className="cib20-eyebrow">PERFILES INFANTILES</p><h2>Tu equipo de CiberHéroes</h2><p>Gestiona sus perfiles, avatares y accesos.</p></div>
-          <button className="cib20-primary-button" type="button" onClick={() => { setEditingProfile(null); setShowForm(true); }}><Plus size={19} /> Agregar CiberHéroe</button>
+          <button className="cib20-primary-button" type="button" onClick={() => { setSuccessMessage(''); setEditingProfile(null); setShowForm(true); }}><Plus size={19} /> Agregar CiberHéroe</button>
         </div>
+        {successMessage && <p className="cib20-success" role="status"><Check size={17} /> {successMessage}</p>}
         {pageError && <p className="cib20-error" role="alert">{pageError}</p>}
         {profiles.length === 0 ? <div className="cib20-empty-state"><div className="cib20-empty-art">🛡️</div><h3>¡Tu equipo está por comenzar!</h3><p>Aún no has creado perfiles infantiles. Agrega el primero para iniciar esta aventura.</p><button className="cib20-primary-button" type="button" onClick={() => setShowForm(true)}><Plus size={18} /> Crear primer perfil</button></div> : (
-          <div className="cib20-profile-grid">{profiles.map((profile) => { const avatar = avatarFor(profile.avatarId); return <article className="cib20-profile-card" key={profile.id}><div className={`cib20-profile-avatar ${avatar.tone}`} aria-hidden="true">{avatar.emoji}</div><div className="cib20-profile-info"><h3>{profile.nickname}</h3><span>{avatar.label}</span><small className={profile.mustChangePin ? 'pending' : 'ready'}>{profile.mustChangePin ? 'Cambio de PIN pendiente' : 'PIN configurado'}</small></div><button className="cib20-icon-button" type="button" onClick={() => { setEditingProfile(profile); setShowForm(true); }} aria-label={`Editar perfil de ${profile.nickname}`}><Pencil size={19} /></button></article>; })}</div>
+          <div className="cib20-profile-grid">{profiles.map((profile) => { const avatar = avatarFor(profile.avatarId); return <article className="cib20-profile-card" key={profile.id}><div className={`cib20-profile-avatar ${avatar.tone}`} aria-hidden="true">{avatar.emoji}</div><div className="cib20-profile-info"><h3>{profile.nickname}</h3><span>{avatar.label}</span><small className={profile.mustChangePin ? 'pending' : 'ready'}>{profile.mustChangePin ? 'Cambio de PIN pendiente' : 'PIN configurado'}</small></div><div className="cib20-profile-actions"><button className="cib20-icon-button" type="button" onClick={() => { setSuccessMessage(''); setEditingProfile(profile); setShowForm(true); }} aria-label={`Editar perfil de ${profile.nickname}`} title="Editar perfil"><Pencil size={18} /><span>Editar</span></button><button className="cib20-icon-button cib20-delete-button" type="button" onClick={() => handleDeleteProfile(profile)} disabled={deletingProfileId === profile.id} aria-label={`Eliminar perfil de ${profile.nickname}`} title="Eliminar perfil"><Trash2 size={18} /><span>{deletingProfileId === profile.id ? 'Eliminando…' : 'Eliminar'}</span></button></div></article>; })}</div>
         )}
       </section>
       <footer className="guardian-dashboard-footer"><span><ShieldCheck size={16} /> Los PIN se almacenan protegidos.</span><button type="button" onClick={loadSpace}><RefreshCw size={15} /> Actualizar perfiles</button></footer>
