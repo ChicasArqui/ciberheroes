@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ArrowLeft, Check, Copy, LogOut, Plus, RefreshCw, ShieldCheck, UsersRound, Pencil, X, LockKeyhole, Sparkles, Trash2 } from 'lucide-react';
+import { ArrowLeft, Check, LogOut, Plus, RefreshCw, ShieldCheck, UsersRound, Pencil, X, LockKeyhole, Sparkles, Trash2 } from 'lucide-react';
 import { createChildProfile, getChildProfiles, getGuardianFamily, logoutGuardian, updateChildProfile, deleteChildProfile } from '../services/api.js';
 import './GuardianSpacePage.css';
 
@@ -84,7 +84,6 @@ function ProfileForm({ initialProfile, onCancel, onSave, isSaving }) {
 }
 
 export default function GuardianSpacePage({ onLogin, onHome }) {
-  const [familyCode, setFamilyCode] = useState('');
   const [profiles, setProfiles] = useState([]);
   const [sessionStatus, setSessionStatus] = useState('checking');
   const [pageError, setPageError] = useState('');
@@ -92,15 +91,13 @@ export default function GuardianSpacePage({ onLogin, onHome }) {
   const [editingProfile, setEditingProfile] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [copyMessage, setCopyMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [deletingProfileId, setDeletingProfileId] = useState(null);
 
   const loadSpace = useCallback(async () => {
     setSessionStatus('checking'); setPageError('');
     try {
-      const [family, result] = await Promise.all([getGuardianFamily(), getChildProfiles()]);
-      setFamilyCode(family.familyCode);
+      const [, result] = await Promise.all([getGuardianFamily(), getChildProfiles()]);
       setProfiles((result.profiles || []).map((profile) => ({ ...profile, id: profile.id || profile._id })));
       setSessionStatus('authenticated');
     } catch (error) {
@@ -153,13 +150,6 @@ export default function GuardianSpacePage({ onLogin, onHome }) {
       setDeletingProfileId(null);
     }
   }
-  async function copyFamilyCode() {
-    try {
-      if (!navigator.clipboard?.writeText) throw new Error('Clipboard unavailable');
-      await navigator.clipboard.writeText(familyCode);
-      setCopyMessage('Código familiar copiado.');
-    } catch { setCopyMessage(`Copia este código manualmente: ${familyCode}`); }
-  }
   async function handleLogout() {
     setIsLoggingOut(true);
     try { await logoutGuardian(); onHome(); }
@@ -183,11 +173,6 @@ export default function GuardianSpacePage({ onLogin, onHome }) {
         <div className="guardian-dashboard-actions"><span className="guardian-welcome-label">Espacio del Guardián</span><button className="cib20-secondary-button" type="button" onClick={handleLogout} disabled={isLoggingOut}><LogOut size={17} /> {isLoggingOut ? 'Cerrando…' : 'Cerrar sesión'}</button></div>
       </header>
       <section className="guardian-dashboard-intro"><div className="guardian-dashboard-intro-copy"><p className="cib20-eyebrow"><i /> ESPACIO DEL GUARDIÁN</p><h1>¡Estos son tus CiberHéroes!</h1><p>Administra los perfiles de tu familia y acompáñalos en cada aventura.</p></div><div className="guardian-dashboard-pipo"><div className="guardian-pipo-speech"><strong>¡Tu equipo está creciendo!</strong><span>Crea, edita y acompaña los perfiles de tus pequeños CiberHéroes.</span></div><img src="/assets/pipo-saludo.png" alt="Pipo, la tortuga guardiana de CiberHéroes" /></div></section>
-      <section className="guardian-family-card" aria-label="Código familiar">
-        <div className="guardian-family-icon"><ShieldCheck size={30} /></div>
-        <div className="guardian-family-copy"><span>Código de tu equipo</span><strong>{familyCode || 'No disponible'}</strong><small>Este código es privado. Compártelo únicamente con tu familia.</small>{copyMessage && <small className="cib20-copy-message" role="status">{copyMessage}</small>}</div>
-        <button className="cib20-secondary-button" type="button" onClick={copyFamilyCode} disabled={!familyCode}><Copy size={18} /> Copiar código</button>
-      </section>
       <section className="guardian-profiles-section">
         <div className="guardian-section-heading"><div><p className="cib20-eyebrow">PERFILES INFANTILES</p><h2>Tu equipo de CiberHéroes</h2><p>Gestiona sus perfiles, avatares y accesos.</p></div>
           <button className="cib20-primary-button" type="button" onClick={() => { setSuccessMessage(''); setEditingProfile(null); setShowForm(true); }}><Plus size={19} /> Agregar CiberHéroe</button>
