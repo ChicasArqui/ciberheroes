@@ -1,9 +1,14 @@
-
 const ChildProfile = require('./child-profile.model');
 const Guardian = require('../auth/guardian.model');
 const { hashPassword } = require('../auth/password.service');
 
 const PIN_PATTERN = /^\d{6}$/;
+
+function createServiceError(code) {
+  const error = new Error(code);
+  error.code = code;
+  return error;
+}
 
 async function getGuardianFamilyId(guardianId) {
   const guardian = await Guardian.findById(guardianId).select('familyId');
@@ -17,36 +22,35 @@ async function listChildProfiles(guardianId) {
   if (!familyId) return [];
 
   return ChildProfile.find({ familyId })
-    .select('_id nickname avatar mustChangePin createdAt updatedAt')
+    .select('_id nickname avatarId mustChangePin createdAt updatedAt')
     .sort({ createdAt: 1 })
     .lean();
 }
 
-async function createChildProfile(guardianId, { nickname, avatar, temporaryPin }) {
+async function createChildProfile(
+  guardianId,
+  { nickname, avatarId, temporaryPin } = {}
+) {
   const familyId = await getGuardianFamilyId(guardianId);
 
   if (!familyId) {
-    const error = new Error('FAMILY_NOT_FOUND');
-    error.code = 'FAMILY_NOT_FOUND';
-    throw error;
+    throw createServiceError('FAMILY_NOT_FOUND');
   }
 
-  if (typeof nickname !== 'string' || nickname.trim().length < 2 || nickname.trim().length > 20) {
-    const error = new Error('INVALID_NICKNAME');
-    error.code = 'INVALID_NICKNAME';
-    throw error;
+  if (
+    typeof nickname !== 'string' ||
+    nickname.trim().length < 2 ||
+    nickname.trim().length > 20
+  ) {
+    throw createServiceError('INVALID_NICKNAME');
   }
 
-  if (typeof avatar !== 'string' || !avatar.trim()) {
-    const error = new Error('INVALID_AVATAR');
-    error.code = 'INVALID_AVATAR';
-    throw error;
+  if (typeof avatarId !== 'string' || !avatarId.trim()) {
+    throw createServiceError('INVALID_AVATAR');
   }
 
   if (typeof temporaryPin !== 'string' || !PIN_PATTERN.test(temporaryPin)) {
-    const error = new Error('INVALID_TEMPORARY_PIN');
-    error.code = 'INVALID_TEMPORARY_PIN';
-    throw error;
+    throw createServiceError('INVALID_TEMPORARY_PIN');
   }
 
   const pinHash = await hashPassword(temporaryPin);
@@ -54,7 +58,7 @@ async function createChildProfile(guardianId, { nickname, avatar, temporaryPin }
   const profile = await ChildProfile.create({
     familyId,
     nickname: nickname.trim(),
-    avatar: avatar.trim(),
+    avatarId: avatarId.trim(),
     pinHash,
     mustChangePin: true
   });
@@ -62,46 +66,46 @@ async function createChildProfile(guardianId, { nickname, avatar, temporaryPin }
   return {
     id: profile._id,
     nickname: profile.nickname,
-    avatar: profile.avatar,
+    avatarId: profile.avatarId,
     mustChangePin: profile.mustChangePin
   };
 }
 
-async function updateChildProfile(guardianId, profileId, { nickname, avatar }) {
+async function updateChildProfile(
+  guardianId,
+  profileId,
+  { nickname, avatarId } = {}
+) {
   const familyId = await getGuardianFamilyId(guardianId);
 
   if (!familyId) {
-    const error = new Error('FAMILY_NOT_FOUND');
-    error.code = 'FAMILY_NOT_FOUND';
-    throw error;
+    throw createServiceError('FAMILY_NOT_FOUND');
   }
 
   const updates = {};
 
   if (nickname !== undefined) {
-    if (typeof nickname !== 'string' || nickname.trim().length < 2 || nickname.trim().length > 20) {
-      const error = new Error('INVALID_NICKNAME');
-      error.code = 'INVALID_NICKNAME';
-      throw error;
+    if (
+      typeof nickname !== 'string' ||
+      nickname.trim().length < 2 ||
+      nickname.trim().length > 20
+    ) {
+      throw createServiceError('INVALID_NICKNAME');
     }
 
     updates.nickname = nickname.trim();
   }
 
-  if (avatar !== undefined) {
-    if (typeof avatar !== 'string' || !avatar.trim()) {
-      const error = new Error('INVALID_AVATAR');
-      error.code = 'INVALID_AVATAR';
-      throw error;
+  if (avatarId !== undefined) {
+    if (typeof avatarId !== 'string' || !avatarId.trim()) {
+      throw createServiceError('INVALID_AVATAR');
     }
 
-    updates.avatar = avatar.trim();
+    updates.avatarId = avatarId.trim();
   }
 
   if (Object.keys(updates).length === 0) {
-    const error = new Error('NO_PROFILE_CHANGES');
-    error.code = 'NO_PROFILE_CHANGES';
-    throw error;
+    throw createServiceError('NO_PROFILE_CHANGES');
   }
 
   const profile = await ChildProfile.findOneAndUpdate(
@@ -109,19 +113,17 @@ async function updateChildProfile(guardianId, profileId, { nickname, avatar }) {
     { $set: updates },
     { new: true, runValidators: true }
   )
-    .select('_id nickname avatar mustChangePin createdAt updatedAt')
+    .select('_id nickname avatarId mustChangePin createdAt updatedAt')
     .lean();
 
   if (!profile) {
-    const error = new Error('PROFILE_NOT_FOUND');
-    error.code = 'PROFILE_NOT_FOUND';
-    throw error;
+    throw createServiceError('PROFILE_NOT_FOUND');
   }
 
   return {
     id: profile._id,
     nickname: profile.nickname,
-    avatar: profile.avatar,
+    avatarId: profile.avatarId,
     mustChangePin: profile.mustChangePin
   };
 }

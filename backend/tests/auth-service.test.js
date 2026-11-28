@@ -1,6 +1,11 @@
-jest.mock('mongoose', () => ({
-  startSession: jest.fn()
-}));
+jest.mock('mongoose', () => {
+  const actualMongoose = jest.requireActual('mongoose');
+
+  return {
+    ...actualMongoose,
+    startSession: jest.fn()
+  };
+});
 
 jest.mock('../src/modules/auth/guardian.model', () => ({
   exists: jest.fn(),
@@ -11,6 +16,10 @@ jest.mock('../src/modules/auth/guardian.model', () => ({
 
 jest.mock('../src/modules/profiles/family.model', () => ({
   create: jest.fn(),
+  createIndexes: jest.fn()
+}));
+
+jest.mock('../src/modules/profiles/child-profile.model', () => ({
   createIndexes: jest.fn()
 }));
 
@@ -26,6 +35,7 @@ jest.mock('../src/modules/profiles/family-code.service', () => ({
 const mongoose = require('mongoose');
 const Guardian = require('../src/modules/auth/guardian.model');
 const Family = require('../src/modules/profiles/family.model');
+const ChildProfile = require('../src/modules/profiles/child-profile.model');
 const { generateFamilyCode } = require('../src/modules/profiles/family-code.service');
 const { hashPassword, verifyPassword } = require('../src/modules/auth/password.service');
 const { registerGuardian, loginGuardian } = require('../src/modules/auth/auth.service');
@@ -331,10 +341,12 @@ describe('índices previos al registro', () => {
     let finishGuardian;
     Guardian.createIndexes.mockImplementation(() => new Promise(resolve => { finishGuardian = resolve; }));
     Family.createIndexes.mockResolvedValue(undefined);
+    ChildProfile.createIndexes.mockResolvedValue(undefined);
     const complete = jest.fn();
     const preparation = ensureAuthIndexes().then(complete);
     await Promise.resolve();
     expect(Family.createIndexes).toHaveBeenCalledTimes(1);
+    expect(ChildProfile.createIndexes).toHaveBeenCalledTimes(1);
     expect(complete).not.toHaveBeenCalled();
     finishGuardian();
     await preparation;
@@ -344,6 +356,7 @@ describe('índices previos al registro', () => {
   test('un fallo de índice impide completar la preparación', async () => {
     Guardian.createIndexes.mockRejectedValue(new Error('índice duplicado ficticio'));
     Family.createIndexes.mockResolvedValue(undefined);
+    ChildProfile.createIndexes.mockResolvedValue(undefined);
     await expect(ensureAuthIndexes()).rejects.toThrow('índice duplicado ficticio');
   });
 });

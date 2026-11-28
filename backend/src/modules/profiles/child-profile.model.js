@@ -15,7 +15,7 @@ const childProfileSchema = new mongoose.Schema({
     minlength: 2,
     maxlength: 20
   },
-  avatar: {
+  avatarId: {
     type: String,
     required: true,
     trim: true

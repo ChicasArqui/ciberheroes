@@ -54,7 +54,7 @@ describe('servicio de perfiles infantiles', () => {
       familyId: 'family-1'
     });
     expect(query.select).toHaveBeenCalledWith(
-      '_id nickname avatar mustChangePin createdAt updatedAt'
+      '_id nickname avatarId mustChangePin createdAt updatedAt'
     );
   });
 
@@ -65,13 +65,13 @@ describe('servicio de perfiles infantiles', () => {
     ChildProfile.create.mockResolvedValue({
       _id: 'profile-1',
       nickname: 'Pipo',
-      avatar: 'pipo',
+      avatarId: 'pipo',
       mustChangePin: true
     });
 
     const result = await createChildProfile('guardian-1', {
       nickname: ' Pipo ',
-      avatar: 'pipo',
+      avatarId: 'pipo',
       temporaryPin: '123456'
     });
 
@@ -79,14 +79,14 @@ describe('servicio de perfiles infantiles', () => {
     expect(ChildProfile.create).toHaveBeenCalledWith({
       familyId: 'family-1',
       nickname: 'Pipo',
-      avatar: 'pipo',
+      avatarId: 'pipo',
       pinHash: 'scrypt$1$salt$hash',
       mustChangePin: true
     });
     expect(result).toEqual({
       id: 'profile-1',
       nickname: 'Pipo',
-      avatar: 'pipo',
+      avatarId: 'pipo',
       mustChangePin: true
     });
     expect(JSON.stringify(result)).not.toContain('123456');
@@ -100,7 +100,7 @@ describe('servicio de perfiles infantiles', () => {
 
       await expect(createChildProfile('guardian-1', {
         nickname: 'Pipo',
-        avatar: 'pipo',
+        avatarId: 'pipo',
         temporaryPin
       })).rejects.toMatchObject({
         code: 'INVALID_TEMPORARY_PIN'
@@ -116,7 +116,7 @@ describe('servicio de perfiles infantiles', () => {
 
     await expect(createChildProfile('guardian-1', {
       nickname: 'Pipo',
-      avatar: 'pipo',
+      avatarId: 'pipo',
       temporaryPin: '123456'
     })).rejects.toMatchObject({
       code: 'FAMILY_NOT_FOUND'
@@ -131,7 +131,7 @@ describe('servicio de perfiles infantiles', () => {
     const updatedProfile = {
       _id: 'profile-1',
       nickname: 'Pipo nuevo',
-      avatar: 'guardian',
+      avatarId: 'guardian',
       mustChangePin: true
     };
 
@@ -144,17 +144,17 @@ describe('servicio de perfiles infantiles', () => {
 
     await expect(updateChildProfile('guardian-1', 'profile-1', {
       nickname: 'Pipo nuevo',
-      avatar: 'guardian'
+      avatarId: 'guardian'
     })).resolves.toEqual({
       id: 'profile-1',
       nickname: 'Pipo nuevo',
-      avatar: 'guardian',
+      avatarId: 'guardian',
       mustChangePin: true
     });
 
     expect(ChildProfile.findOneAndUpdate).toHaveBeenCalledWith(
       { _id: 'profile-1', familyId: 'family-1' },
-      { $set: { nickname: 'Pipo nuevo', avatar: 'guardian' } },
+      { $set: { nickname: 'Pipo nuevo', avatarId: 'guardian' } },
       { new: true, runValidators: true }
     );
   });
