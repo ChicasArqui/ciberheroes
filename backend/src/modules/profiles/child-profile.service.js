@@ -140,8 +140,18 @@ async function updateChildProfile(
   };
 }
 
+async function deleteChildProfile(guardianId, profileId) {
+  if (!mongoose.isValidObjectId(profileId)) throw createServiceError('INVALID_PROFILE_ID');
+  const familyId = await getGuardianFamilyId(guardianId);
+  if (!familyId) throw createServiceError('FAMILY_NOT_FOUND');
+  const profile = await ChildProfile.findOneAndDelete({ _id: profileId, familyId }).select('_id').lean();
+  if (!profile) throw createServiceError('PROFILE_NOT_FOUND');
+  return { id: profile._id };
+}
+
 module.exports = {
   listChildProfiles,
   createChildProfile,
-  updateChildProfile
+  updateChildProfile,
+  deleteChildProfile
 };
