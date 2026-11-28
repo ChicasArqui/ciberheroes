@@ -1,4 +1,6 @@
 const { createHmac, randomBytes } = require('node:crypto');
+const { isIP } = require('node:net');
+const ipaddr = require('ipaddr.js');
 const { RateLimiterMemory, RateLimiterMongo, RateLimiterRes } = require('rate-limiter-flexible');
 const { createTurnstileVerifier } = require('./turnstile.service');
 const { isValidGuardianEmail } = require('./auth.validation');
@@ -14,7 +16,8 @@ const AUTH_RATE_LIMITS = {
 
 function createAuthRateLimiters({
   storeClient, dbName, secret = randomBytes(32), policies = AUTH_RATE_LIMITS,
-  challengeVerifier = createTurnstileVerifier()
+  challengeVerifier = createTurnstileVerifier(),
+  renderIngress = process.env.RENDER === 'true'
 } = {}) {
   const indexes = [];
   function createLimiter(name, policy) {
@@ -39,6 +42,19 @@ function createAuthRateLimiters({
   const key = (...parts) => createHmac('sha256', secret)
     .update(JSON.stringify(parts)).digest('hex');
 
+  function clientIp(req) {
+    // Solo para el ingreso público de Render: Cloudflare establece el encabezado
+    // y rechaza solicitudes públicas que intentan proporcionarlo por su cuenta.
+    // Fuera de Render nunca se confía en un CF-Connecting-IP del cliente.
+    const forwarded = renderIngress ? req.get('CF-Connecting-IP') : req.ip;
+    if (typeof forwarded !== 'string' || !isIP(forwarded.trim())) {
+      throw new Error('IP de ingreso de Render no disponible');
+    }
+    // Canonizar antes del HMAC: las formas equivalentes de IPv6 y las IPv4
+    // mapeadas deben compartir contador y contexto de Turnstile.
+    return ipaddr.process(forwarded.trim()).toString();
+  }
+
   function reject(error, res) {
     if (error instanceof RateLimiterRes) {
       const retryAfter = Math.max(1, Math.ceil(error.msBeforeNext / 1000));
@@ -51,7 +67,7 @@ function createAuthRateLimiters({
   async function register(req, res, next) {
     const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
     try {
-      await registerIp.consume(key(req.ip));
+      await registerIp.consume(key(clientIp(req)));
       await registerEmail.consume(key(email));
       return next();
     } catch (error) {
@@ -77,13 +93,14 @@ function createAuthRateLimiters({
       await Promise.all(reservations.splice(0).map(([limiter, id]) => limiter.reward(id)));
     }
     try {
-      await loginIp.consume(key(req.ip));
+      const ip = clientIp(req);
+      await loginIp.consume(key(ip));
       // Entradas inválidas gastan cuota de red, pero no oportunidades de contraseña.
       if (!isValidGuardianEmail(req.body?.email) ||
           typeof req.body?.password !== 'string' || !req.body.password) return next();
       const email = typeof req.body?.email === 'string'
         ? req.body.email.trim().toLowerCase() : '';
-      const identityKey = key(req.ip, email);
+      const identityKey = key(ip, email);
       await reserve(loginIdentity, identityKey);
       let challengeRequired = false;
       try {
@@ -94,7 +111,7 @@ function createAuthRateLimiters({
       }
 
       if (challengeRequired) {
-        const cData = key('guardian-login', req.ip, email);
+        const cData = key('guardian-login', ip, email);
         const challenge = challengeVerifier.publicConfig(cData);
         const token = req.body.challengeToken;
         let verified = false;
@@ -103,7 +120,7 @@ function createAuthRateLimiters({
           // el token incluso en solicitudes concurrentes o en distintas instancias.
           try {
             await challengeTokens.consume(key(token));
-            verified = await challengeVerifier.verify({ token, ip: req.ip, cData });
+            verified = await challengeVerifier.verify({ token, ip, cData });
           } catch (error) {
             if (!(error instanceof RateLimiterRes)) throw error;
           }

@@ -207,7 +207,60 @@ describe('recuperación de la sesión del Guardián', () => {
         const onLogin = vi.fn();
         render(<GuardianSpacePage onLogin={onLogin} />);
         await waitFor(() => expect(onLogin).toHaveBeenCalledOnce());
-        expect(screen.getByRole('button', { name: 'Cerrar sesión' })).toBeTruthy();
+        expect(screen.queryByRole('button', { name: 'Cerrar sesión' })).toBeNull();
+    });
+
+    it.each([
+        ['conexión', new TypeError('Failed to fetch')],
+        ['servidor', Object.assign(new Error('SERVER_ERROR'), { status: 500 })],
+    ])('impide abrir el espacio ante un error de %s y permite recuperar la sesión', async (_kind, error) => {
+        let resolveRetry;
+        api.getGuardianFamily.mockRejectedValueOnce(error)
+            .mockImplementationOnce(() => new Promise((resolve) => { resolveRetry = resolve; }));
+        const onLogin = vi.fn();
+        render(<GuardianSpacePage onLogin={onLogin} />);
+
+        expect((await screen.findByRole('alert')).textContent).toContain('No pudimos comprobar tu sesión');
+        expect(screen.queryByRole('button', { name: 'Cerrar sesión' })).toBeNull();
+        expect(onLogin).not.toHaveBeenCalled();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }));
+        expect(screen.getByRole('status').textContent).toContain('Comprobando tu sesión');
+        expect(screen.queryByRole('alert')).toBeNull();
+        expect(screen.queryByRole('button', { name: 'Reintentar' })).toBeNull();
+        expect(screen.queryByRole('button', { name: 'Cerrar sesión' })).toBeNull();
+        await waitFor(() => expect(api.getGuardianFamily).toHaveBeenCalledTimes(2));
+        resolveRetry({ familyCode: 'AB23CD45' });
+
+        await screen.findByRole('button', { name: 'Cerrar sesión' });
+        expect(screen.queryByRole('alert')).toBeNull();
+        expect(screen.queryByText('AB23CD45')).toBeNull();
+        expect(onLogin).not.toHaveBeenCalled();
+    });
+
+    it('mantiene el error si el reintento falla y vuelve al login si devuelve 401', async () => {
+        api.getGuardianFamily.mockRejectedValueOnce(new Error('sin conexión'))
+            .mockRejectedValueOnce(Object.assign(new Error('SERVER_ERROR'), { status: 500 }))
+            .mockRejectedValueOnce(noSession());
+        const onLogin = vi.fn();
+        render(<GuardianSpacePage onLogin={onLogin} />);
+        await screen.findByRole('alert');
+        fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }));
+        await screen.findByRole('alert');
+        expect(screen.queryByRole('button', { name: 'Cerrar sesión' })).toBeNull();
+        expect(onLogin).not.toHaveBeenCalled();
+        fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }));
+        await waitFor(() => expect(onLogin).toHaveBeenCalledOnce());
+    });
+
+    it('permite cerrar la sesión validada y regresar al login', async () => {
+        api.getGuardianFamily.mockResolvedValue({ familyCode: 'AB23CD45' });
+        api.logoutGuardian.mockResolvedValue({});
+        const onLogin = vi.fn();
+        render(<GuardianSpacePage onLogin={onLogin} />);
+        fireEvent.click(await screen.findByRole('button', { name: 'Cerrar sesión' }));
+        await waitFor(() => expect(onLogin).toHaveBeenCalledOnce());
+        expect(api.logoutGuardian).toHaveBeenCalledOnce();
     });
 
     it('permite copiar el código con su aviso de privacidad visible', async () => {
