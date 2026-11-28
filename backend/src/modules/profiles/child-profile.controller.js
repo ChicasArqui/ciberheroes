@@ -2,7 +2,8 @@
 const {
   listChildProfiles,
   createChildProfile,
-  updateChildProfile
+  updateChildProfile,
+  deleteChildProfile
 } = require('./child-profile.service');
 
 async function listChildProfilesController(req, res) {
@@ -68,8 +69,21 @@ async function updateChildProfileController(req, res) {
   }
 }
 
+async function deleteChildProfileController(req, res) {
+  try {
+    await deleteChildProfile(req.session.guardianId, req.params.profileId);
+    return res.status(200).json({ message: 'PROFILE_DELETED' });
+  } catch (error) {
+    const statusByCode = { FAMILY_NOT_FOUND: 404, PROFILE_NOT_FOUND: 404, INVALID_PROFILE_ID: 400 };
+    return res.status(statusByCode[error.code] || 500).json({
+      error: statusByCode[error.code] ? error.code : 'INTERNAL_SERVER_ERROR'
+    });
+  }
+}
+
 module.exports = {
   listChildProfilesController,
   createChildProfileController,
-  updateChildProfileController
+  updateChildProfileController,
+  deleteChildProfileController
 };
