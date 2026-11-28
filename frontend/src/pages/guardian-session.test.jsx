@@ -7,6 +7,7 @@ import * as api from '../services/api.js';
 
 vi.mock('../services/api.js', () => ({
     getGuardianFamily: vi.fn(),
+    getChildProfiles: vi.fn(),
     loginGuardian: vi.fn(),
     logoutGuardian: vi.fn(),
     registerGuardian: vi.fn(),
@@ -14,7 +15,10 @@ vi.mock('../services/api.js', () => ({
 
 const noSession = () => Object.assign(new Error('AUTHENTICATION_REQUIRED'), { status: 401 });
 
-beforeEach(() => vi.resetAllMocks());
+beforeEach(() => {
+    vi.resetAllMocks();
+    api.getChildProfiles.mockResolvedValue({ profiles: [] });
+});
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
 describe('recuperación de la sesión del Guardián', () => {
