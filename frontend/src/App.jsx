@@ -111,7 +111,7 @@ export default function App() {
   );
 
   if (screen === 'guardian-space') {
-    return <GuardianSpacePage onLogin={openGuardianLogin} />;
+    return <GuardianSpacePage onLogin={openGuardianLogin} onHome={goWelcome} />;
   }
 
   return (

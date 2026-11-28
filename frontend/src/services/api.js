@@ -65,3 +65,41 @@ export function logoutGuardian() {
 export function getGuardianFamily() {
   return apiRequest('/api/guardian/family');
 }
+
+export function getChildProfiles() {
+  return apiRequest('/api/guardian/profiles');
+}
+
+export function createChildProfile({ nickname, avatarId, temporaryPin }) {
+  return apiRequest('/api/guardian/profiles', {
+    method: 'POST',
+    body: JSON.stringify({ nickname, avatarId, temporaryPin })
+  });
+}
+
+export function updateChildProfile(profileId, updates) {
+  return apiRequest(`/api/guardian/profiles/${encodeURIComponent(profileId)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(updates)
+  });
+}
+
+export function deleteChildProfile(profileId) {
+  return apiRequest(`/api/guardian/profiles/${encodeURIComponent(profileId)}`, {
+    method: 'DELETE'
+  });
+}
+
+export function loginChild({ profileId, pin }) {
+  return apiRequest('/api/child/login', {
+    method: 'POST',
+    body: JSON.stringify({ profileId, pin })
+  });
+}
+
+export function changeChildPin({ newPin, confirmationPin }) {
+  return apiRequest('/api/child/change-pin', {
+    method: 'POST',
+    body: JSON.stringify({ newPin, confirmationPin })
+  });
+}

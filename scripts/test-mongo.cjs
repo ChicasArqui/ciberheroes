@@ -14,6 +14,7 @@ const result = spawnSync(process.execPath, [
     NODE_ENV: 'test',
     RUN_MONGO_INTEGRATION: '1',
     MONGODB_URI: 'mongodb://127.0.0.1:27017/ciberheroes_ci?replicaSet=rs0&directConnection=true',
+    CHILD_AUTH_MONGODB_URI: 'mongodb://127.0.0.1:27017/ciberheroes_cib20_ci?replicaSet=rs0&directConnection=true',
     SESSION_SECRET: randomBytes(32).toString('hex')
   }
 });

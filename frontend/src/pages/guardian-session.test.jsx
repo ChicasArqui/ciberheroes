@@ -7,6 +7,9 @@ import * as api from '../services/api.js';
 
 vi.mock('../services/api.js', () => ({
     getGuardianFamily: vi.fn(),
+    getChildProfiles: vi.fn(),
+    createChildProfile: vi.fn(),
+    updateChildProfile: vi.fn(),
     loginGuardian: vi.fn(),
     logoutGuardian: vi.fn(),
     registerGuardian: vi.fn(),
@@ -14,7 +17,10 @@ vi.mock('../services/api.js', () => ({
 
 const noSession = () => Object.assign(new Error('AUTHENTICATION_REQUIRED'), { status: 401 });
 
-beforeEach(() => vi.resetAllMocks());
+beforeEach(() => {
+    vi.resetAllMocks();
+    api.getChildProfiles.mockResolvedValue({ profiles: [] });
+});
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
 describe('recuperación de la sesión del Guardián', () => {
@@ -253,13 +259,13 @@ describe('recuperación de la sesión del Guardián', () => {
         await waitFor(() => expect(onLogin).toHaveBeenCalledOnce());
     });
 
-    it('permite cerrar la sesión validada y regresar al login', async () => {
+    it('permite cerrar la sesión validada y regresar al inicio', async () => {
         api.getGuardianFamily.mockResolvedValue({ familyCode: 'AB23CD45' });
         api.logoutGuardian.mockResolvedValue({});
-        const onLogin = vi.fn();
-        render(<GuardianSpacePage onLogin={onLogin} />);
+        const onHome = vi.fn();
+        render(<GuardianSpacePage onLogin={vi.fn()} onHome={onHome} />);
         fireEvent.click(await screen.findByRole('button', { name: 'Cerrar sesión' }));
-        await waitFor(() => expect(onLogin).toHaveBeenCalledOnce());
+        await waitFor(() => expect(onHome).toHaveBeenCalledOnce());
         expect(api.logoutGuardian).toHaveBeenCalledOnce();
     });
 
