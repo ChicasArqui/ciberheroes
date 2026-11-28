@@ -11,7 +11,8 @@ const {
 const {
   listChildProfilesController,
   createChildProfileController,
-  updateChildProfileController
+  updateChildProfileController,
+  deleteChildProfileController
 } = require('./child-profile.controller');
 
 const router = express.Router();
@@ -38,6 +39,12 @@ router.patch(
   '/profiles/:profileId',
   requireGuardianSession,
   updateChildProfileController
+);
+
+router.delete(
+  '/profiles/:profileId',
+  requireGuardianSession,
+  deleteChildProfileController
 );
 
 module.exports = router;
