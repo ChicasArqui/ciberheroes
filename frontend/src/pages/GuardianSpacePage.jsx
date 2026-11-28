@@ -78,7 +78,7 @@ export default function GuardianSpacePage({ onLogin }) {
     setSessionStatus('checking'); setPageError('');
     try {
       const [family, result] = await Promise.all([getGuardianFamily(), getChildProfiles()]);
-      setFamilyCode(family.familyCode); setProfiles(result.profiles || []); setSessionStatus('authenticated');
+      setFamilyCode(family.familyCode); setProfiles((result.profiles || []).map((profile) => ({ ...profile, id: profile.id || profile._id }))); setSessionStatus('authenticated');
     } catch (error) {
       if (error.status === 401) { onLogin(); return; }
       setPageError(error.code === 'FAMILY_NOT_FOUND' ? 'Tu cuenta todavía no tiene una familia asociada.' : 'No pudimos cargar tu espacio familiar. Comprueba la conexión e inténtalo de nuevo.');
