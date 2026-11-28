@@ -84,6 +84,12 @@ export function updateChildProfile(profileId, updates) {
   });
 }
 
+export function deleteChildProfile(profileId) {
+  return apiRequest(`/api/guardian/profiles/${encodeURIComponent(profileId)}`, {
+    method: 'DELETE'
+  });
+}
+
 export function loginChild({ profileId, pin }) {
   return apiRequest('/api/child/login', {
     method: 'POST',
