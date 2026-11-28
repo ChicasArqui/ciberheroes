@@ -46,3 +46,77 @@
 .cib20-profile-actions .cib20-delete-button:hover:not(:disabled){background:#FFF0F2}
 .cib20-profile-actions .cib20-delete-button:disabled{opacity:.55;cursor:wait}
 @media(max-width:520px){.cib20-profile-card{flex-wrap:wrap}.cib20-profile-actions{width:100%;justify-content:flex-end}.cib20-profile-actions .cib20-icon-button{flex:1;justify-content:center}}
+
+
+/* CIB-20 · identidad visual inspirada en las pantallas de referencia */
+.guardian-dashboard{background:#fffaf2;color:#24123f}
+.guardian-dashboard-header{max-width:1440px;min-height:76px}
+.guardian-dashboard-brand{color:#7042ad}
+.guardian-dashboard-brand>svg{color:#7042ad}
+.guardian-dashboard-nav .active{background:#f0e2f7;color:#7042ad}
+.guardian-dashboard-intro{position:relative;display:flex;align-items:center;justify-content:space-between;gap:28px;min-height:270px;padding:38px 0 24px;overflow:visible}
+.guardian-dashboard-intro-copy{position:relative;z-index:1;max-width:690px}
+.guardian-dashboard-intro h1,.cib20-editor-heading h1{color:#24123f;font-size:clamp(2.35rem,4.2vw,3.55rem);letter-spacing:-.035em}
+.guardian-dashboard-intro>div>p:last-child,.cib20-editor-heading>div>p:last-child{font-size:clamp(1rem,1.35vw,1.18rem);color:#746984}
+.guardian-dashboard-pipo{position:relative;display:flex;align-items:center;justify-content:center;flex:0 1 340px;min-width:230px;min-height:245px;isolation:isolate}
+.guardian-dashboard-pipo:before{content:"";position:absolute;inset:28px 0 0;background:#eaf4dc;border-radius:48% 48% 40% 42%;z-index:-1}
+.guardian-dashboard-pipo img{width:100%;height:250px;object-fit:contain;filter:drop-shadow(0 10px 12px #273d241c)}
+.guardian-pipo-speech{position:absolute;z-index:2;top:0;right:0;max-width:255px;padding:13px 17px;border:1px solid #f0e9f2;border-radius:18px;background:#fff;box-shadow:0 8px 25px #24133a0c;transform:rotate(-2deg)}
+.guardian-pipo-speech strong{display:block;color:#281542;font:800 17px 'Baloo 2',sans-serif}
+.guardian-pipo-speech span{display:block;margin-top:3px;color:#746984;font-size:12px;line-height:1.35}
+.guardian-family-card{background:#edf5e5;border-color:#e1edd7;border-radius:22px}
+.guardian-family-copy strong{color:#281542}
+.guardian-profiles-section{padding-top:34px}
+.guardian-section-heading h2{color:#281542;font-size:clamp(1.55rem,2.4vw,2rem)}
+.cib20-profile-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:20px}
+.cib20-profile-card{align-items:stretch;flex-wrap:wrap;gap:14px;padding:20px;border:1.5px solid #e8dff0;border-radius:23px;background:#fff;box-shadow:0 8px 25px #24133a0a;transition:transform .18s,box-shadow .18s}
+.cib20-profile-card:hover{transform:translateY(-2px);box-shadow:0 12px 28px #24133a12}
+.cib20-profile-avatar{width:92px;height:92px;border-radius:22px;font-size:52px}
+.cib20-profile-info{align-self:center}
+.cib20-profile-info h3{color:#281542;font-size:25px}
+.cib20-profile-actions{width:100%;justify-content:space-between;padding-top:12px;border-top:1px solid #eee7f2}
+.cib20-profile-actions .cib20-icon-button{flex:1;min-width:0;min-height:42px;border:0;background:#f5effa;color:#7042ad}
+.cib20-profile-actions .cib20-delete-button{background:#fff0f1;color:#a3344b}
+.cib20-profile-actions .cib20-icon-button span{font-size:13px}
+.cib20-editor{max-width:1440px}
+.cib20-editor-heading{align-items:center;min-height:190px}
+.cib20-editor-mascot{width:min(25vw,220px);height:190px;flex:none;background:#eaf4dc;border-radius:48% 48% 42% 42%;overflow:visible}
+.cib20-editor-mascot img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 9px 10px #273d241a)}
+.cib20-editor-mascot span{top:3px;right:4px;color:#f3b900}
+.cib20-editor-card{max-width:1020px;padding:clamp(20px,3vw,38px);border-radius:26px;box-shadow:0 10px 30px #24133a0b}
+.cib20-avatar-option{min-height:112px;background:#fff}
+.cib20-avatar-option.selected{border-color:#8054c4;box-shadow:0 0 0 3px #8054c41a}
+.cib20-avatar-check{background:#8054c4}
+.cib20-primary-button{background:#8054c4;border-color:#8054c4;box-shadow:0 5px 0 #4d327d}
+.cib20-primary-button:hover:not(:disabled){background:#7042ad}
+.cib20-input:focus{outline-color:#8054c433;border-color:#8054c4}
+.cib20-editor-footnote{color:#746984}
+.cib20-success{background:#eaf7ed;border-color:#b9e3c5;color:#246b3b}
+@media(max-width:900px){
+ .guardian-dashboard-intro{min-height:220px}
+ .guardian-dashboard-pipo{flex-basis:260px;min-width:190px;min-height:210px}
+ .guardian-dashboard-pipo img{height:215px}
+ .guardian-pipo-speech{max-width:210px;padding:10px 12px}
+ .guardian-pipo-speech strong{font-size:15px}
+}
+@media(max-width:650px){
+ .guardian-dashboard-intro{min-height:0;padding:30px 0 22px}
+ .guardian-dashboard-pipo{display:none}
+ .guardian-dashboard-intro h1,.cib20-editor-heading h1{font-size:clamp(2rem,9vw,2.8rem)}
+ .cib20-editor-heading{min-height:0;gap:12px}
+ .cib20-editor-mascot{width:100px;height:100px}
+ .cib20-profile-card{gap:12px}
+ .cib20-profile-avatar{width:74px;height:74px;font-size:43px}
+ .cib20-profile-actions{gap:8px}
+ .cib20-profile-actions .cib20-icon-button{padding:0 7px}
+}
+@media(max-width:390px){
+ .guardian-dashboard{padding-left:14px;padding-right:14px}
+ .guardian-dashboard-brand{font-size:21px}
+ .guardian-dashboard-header{gap:8px}
+ .guardian-dashboard-actions .cib20-secondary-button{font-size:11px;padding:8px}
+ .cib20-editor-card{padding:15px}
+ .cib20-avatar-picker{gap:8px}
+ .cib20-avatar-option{min-height:92px}
+ .cib20-avatar-option>span{font-size:35px}
+}
