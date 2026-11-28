@@ -81,7 +81,7 @@ export default function GuardianSpacePage({ onLogin }) {
       setFamilyCode(family.familyCode); setProfiles((result.profiles || []).map((profile) => ({ ...profile, id: profile.id || profile._id }))); setSessionStatus('authenticated');
     } catch (error) {
       if (error.status === 401) { onLogin(); return; }
-      setPageError(error.code === 'FAMILY_NOT_FOUND' ? 'Tu cuenta todavía no tiene una familia asociada.' : 'No pudimos cargar tu espacio familiar. Comprueba la conexión e inténtalo de nuevo.');
+      setPageError(error.code === 'FAMILY_NOT_FOUND' ? 'Tu cuenta todavía no tiene una familia asociada.' : 'No pudimos comprobar tu sesión. Revisa tu conexión e inténtalo de nuevo.');
       setSessionStatus('error');
     }
   }, [onLogin]);
@@ -111,7 +111,7 @@ export default function GuardianSpacePage({ onLogin }) {
   }
 
   if (sessionStatus === 'checking') return <main className="guardian-space-placeholder guardian-space-status"><p role="status">Preparando tu espacio familiar…</p></main>;
-  if (sessionStatus === 'error') return <main className="guardian-space-placeholder guardian-space-status"><p role="alert">{pageError}</p><button className="cib20-primary-button" type="button" onClick={loadSpace}><RefreshCw size={17} /> Reintentar</button><button className="cib20-secondary-button" type="button" onClick={handleLogout} disabled={isLoggingOut}>Cerrar sesión</button></main>;
+  if (sessionStatus === 'error') return <main className="guardian-space-placeholder guardian-space-status"><p role="alert">{pageError}</p><button className="cib20-primary-button" type="button" onClick={loadSpace}><RefreshCw size={17} /> Reintentar</button></main>;
 
   return (
     <main className="guardian-dashboard">
