@@ -1,5 +1,6 @@
 const { createHmac, randomBytes } = require('node:crypto');
 const { isIP } = require('node:net');
+const ipaddr = require('ipaddr.js');
 const { RateLimiterMemory, RateLimiterMongo, RateLimiterRes } = require('rate-limiter-flexible');
 const { createTurnstileVerifier } = require('./turnstile.service');
 const { isValidGuardianEmail } = require('./auth.validation');
@@ -42,15 +43,16 @@ function createAuthRateLimiters({
     .update(JSON.stringify(parts)).digest('hex');
 
   function clientIp(req) {
-    if (!renderIngress) return req.ip;
-    // Solo para el ingreso público de Render: Cloudflare sobrescribe este
-    // encabezado. req.ip con un único salto puede identificar proxies variables.
+    // Solo para el ingreso público de Render: Cloudflare establece el encabezado
+    // y rechaza solicitudes públicas que intentan proporcionarlo por su cuenta.
     // Fuera de Render nunca se confía en un CF-Connecting-IP del cliente.
-    const forwarded = req.get('CF-Connecting-IP');
+    const forwarded = renderIngress ? req.get('CF-Connecting-IP') : req.ip;
     if (typeof forwarded !== 'string' || !isIP(forwarded.trim())) {
       throw new Error('IP de ingreso de Render no disponible');
     }
-    return forwarded.trim();
+    // Canonizar antes del HMAC: las formas equivalentes de IPv6 y las IPv4
+    // mapeadas deben compartir contador y contexto de Turnstile.
+    return ipaddr.process(forwarded.trim()).toString();
   }
 
   function reject(error, res) {

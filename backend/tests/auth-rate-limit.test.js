@@ -26,6 +26,32 @@ afterEach(() => jest.restoreAllMocks());
 
 const post = (route, body = input) => request(app).post(`/api/auth/${route}`).send(body);
 
+const equivalentIps = [
+  ['2001:db8::1', '2001:0DB8:0000:0000:0000:0000:0000:0001'],
+  ['203.0.113.10', '::ffff:203.0.113.10', '0:0:0:0:0:FFFF:CB00:710A']
+];
+
+describe.each([true, false])('normalización de IP con renderIngress=%s', renderIngress => {
+  test.each(equivalentIps.map(ips => [ips]))('comparte los cinco fallos entre representaciones %j', async ips => {
+    app = baseApp.createApp({ authRateLimiters: createAuthRateLimiters({ renderIngress }) });
+    app.set('trust proxy', 1);
+    const header = renderIngress ? 'CF-Connecting-IP' : 'X-Forwarded-For';
+    for (let i = 0; i < 6; i++) {
+      await post('login').set(header, ips[i % ips.length]).expect(i < 5 ? 401 : 429);
+    }
+    // Otra dirección real conserva su propia cuota.
+    await post('login').set(header, '2001:db8::2').expect(401);
+  });
+});
+
+test('la cuota de red de login agrupa IPv6 equivalentes aunque cambie el correo', async () => {
+  app = baseApp.createApp({ authRateLimiters: createAuthRateLimiters({ renderIngress: true }) });
+  for (let i = 0; i < 31; i++) {
+    await post('login', { ...input, email: `intento${i}@example.com` })
+      .set('CF-Connecting-IP', equivalentIps[0][i % 2]).expect(i < 30 ? 401 : 429);
+  }
+});
+
 test('en Render cuenta la IP del visitante aunque cambien los proxies y X-Forwarded-For', async () => {
   app = baseApp.createApp({ authRateLimiters: createAuthRateLimiters({ renderIngress: true }) });
   app.set('trust proxy', 1);
@@ -62,7 +88,7 @@ test('en Render los registros comparten la cuota del visitante entre proxies', a
   app.set('trust proxy', 1);
   for (let i = 0; i < 21; i++) {
     await post('register', { ...input, email: `registro${i}@example.com` })
-      .set('CF-Connecting-IP', '2001:db8::1')
+      .set('CF-Connecting-IP', equivalentIps[0][i % 2])
       .set('X-Forwarded-For', `198.51.100.${i + 1}`).expect(i < 20 ? 409 : 429);
   }
 });
@@ -83,13 +109,13 @@ test('Turnstile recibe la IP del visitante y un contexto estable entre proxies',
     await post('login').set('CF-Connecting-IP', `203.0.113.${i + 1}`)
       .set('X-Forwarded-For', '198.51.100.1').expect(401);
   }
-  await post('login').set('CF-Connecting-IP', '203.0.113.100')
+  await post('login').set('CF-Connecting-IP', equivalentIps[0][0])
     .set('X-Forwarded-For', '198.51.100.2').expect(403);
   await post('login', { ...input, challengeToken: 'token-ficticio' })
-    .set('CF-Connecting-IP', '203.0.113.100')
+    .set('CF-Connecting-IP', equivalentIps[0][1])
     .set('X-Forwarded-For', '198.51.100.3').expect(401);
   expect(configurations[0]).toBe(configurations[1]);
-  expect(verify).toHaveBeenCalledWith(expect.objectContaining({ ip: '203.0.113.100', cData: configurations[0] }));
+  expect(verify).toHaveBeenCalledWith(expect.objectContaining({ ip: '2001:db8::1', cData: configurations[0] }));
 });
 
 // Usar el almacén real permite verificar si consume() escribió antes de rechazar.

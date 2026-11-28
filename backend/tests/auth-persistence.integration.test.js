@@ -335,7 +335,7 @@ describeWithMongo('integración real: registro, MongoDB y sesión', () => {
     server.set('trust proxy', 1);
     const responses = await Promise.all(Array.from({ length: 6 }, (_, i) =>
       request(server).post('/api/auth/login')
-        .set('CF-Connecting-IP', '203.0.113.25')
+        .set('CF-Connecting-IP', i % 2 === 0 ? '2001:db8::25' : '2001:0DB8:0000:0000:0000:0000:0000:0025')
         .set('X-Forwarded-For', `192.0.2.${i + 1}, 198.51.100.${i + 1}`)
         .send({ email: 'proxy-concurrente@example.com', password: 'FicticiaIncorrecta!123' })));
     expect(responses.filter(response => response.status === 401)).toHaveLength(5);
