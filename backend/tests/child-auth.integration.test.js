@@ -170,7 +170,7 @@ describeWithMongo('integración real: perfiles y autenticación infantil', () =>
       .post('/api/guardian/profiles')
       .send({
         nickname: 'Pipo',
-        avatarId: 'pipo',
+        avatarId: 'zorro',
         temporaryPin: '123456'
       });
 
@@ -189,7 +189,7 @@ describeWithMongo('integración real: perfiles y autenticación infantil', () =>
     expect(createdProfile).toEqual({
       id: expect.any(String),
       nickname: 'Pipo',
-      avatarId: 'pipo',
+      avatarId: 'zorro',
       mustChangePin: true
     });
 
@@ -220,7 +220,7 @@ describeWithMongo('integración real: perfiles y autenticación infantil', () =>
     expect(login.body.profile).toEqual({
       id: createdProfile.id,
       nickname: 'Pipo',
-      avatarId: 'pipo',
+      avatarId: 'zorro',
       mustChangePin: true
     });
 
