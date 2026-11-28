@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const ChildProfile = require('./child-profile.model');
 const Guardian = require('../auth/guardian.model');
 const { hashPassword } = require('../auth/password.service');
+const { CHILD_AVATAR_IDS } = require('./child-profile.constants');
 
 const PIN_PATTERN = /^\d{6}$/;
 
@@ -46,7 +47,10 @@ async function createChildProfile(
     throw createServiceError('INVALID_NICKNAME');
   }
 
-  if (typeof avatarId !== 'string' || !avatarId.trim()) {
+  if (
+    typeof avatarId !== 'string' ||
+    !CHILD_AVATAR_IDS.includes(avatarId.trim())
+  ) {
     throw createServiceError('INVALID_AVATAR');
   }
 
@@ -102,7 +106,10 @@ async function updateChildProfile(
   }
 
   if (avatarId !== undefined) {
-    if (typeof avatarId !== 'string' || !avatarId.trim()) {
+    if (
+      typeof avatarId !== 'string' ||
+      !CHILD_AVATAR_IDS.includes(avatarId.trim())
+    ) {
       throw createServiceError('INVALID_AVATAR');
     }
 

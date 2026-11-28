@@ -65,13 +65,13 @@ describe('servicio de perfiles infantiles', () => {
     ChildProfile.create.mockResolvedValue({
       _id: 'profile-1',
       nickname: 'Pipo',
-      avatarId: 'pipo',
+      avatarId: 'pinguino',
       mustChangePin: true
     });
 
     const result = await createChildProfile('guardian-1', {
       nickname: ' Pipo ',
-      avatarId: 'pipo',
+      avatarId: 'pinguino',
       temporaryPin: '123456'
     });
 
@@ -79,19 +79,69 @@ describe('servicio de perfiles infantiles', () => {
     expect(ChildProfile.create).toHaveBeenCalledWith({
       familyId: 'family-1',
       nickname: 'Pipo',
-      avatarId: 'pipo',
+      avatarId: 'pinguino',
       pinHash: 'scrypt$1$salt$hash',
       mustChangePin: true
     });
     expect(result).toEqual({
       id: 'profile-1',
       nickname: 'Pipo',
-      avatarId: 'pipo',
+      avatarId: 'pinguino',
       mustChangePin: true
     });
     expect(JSON.stringify(result)).not.toContain('123456');
     expect(JSON.stringify(result)).not.toContain('scrypt');
   });
+
+  test.each([
+    'zorro',
+    'gato',
+    'perro',
+    'conejo',
+    'pinguino',
+    'buho',
+    'mapache',
+    'koala',
+    'leon'
+  ])('acepta el avatar oficial %s al crear un perfil', async (avatarId) => {
+    mockGuardian();
+    hashPassword.mockResolvedValue('hash-temporal');
+
+    ChildProfile.create.mockResolvedValue({
+      _id: 'profile-1',
+      nickname: 'Pipo',
+      avatarId,
+      mustChangePin: true
+    });
+
+    await expect(createChildProfile('guardian-1', {
+      nickname: 'Pipo',
+      avatarId,
+      temporaryPin: '123456'
+    })).resolves.toMatchObject({ avatarId });
+
+    expect(ChildProfile.create).toHaveBeenCalledWith(
+      expect.objectContaining({ avatarId })
+    );
+  });
+
+  test.each(['dragon', 'avatar123', '', null, 123])(
+    'rechaza un avatar inválido al crear un perfil: %p',
+    async (avatarId) => {
+      mockGuardian();
+
+      await expect(createChildProfile('guardian-1', {
+        nickname: 'Pipo',
+        avatarId,
+        temporaryPin: '123456'
+      })).rejects.toMatchObject({
+        code: 'INVALID_AVATAR'
+      });
+
+      expect(hashPassword).not.toHaveBeenCalled();
+      expect(ChildProfile.create).not.toHaveBeenCalled();
+    }
+  );
 
   test.each(['12345', '1234567', '12ab56', '', 123456])(
     'rechaza un PIN temporal inválido: %p',
@@ -100,7 +150,7 @@ describe('servicio de perfiles infantiles', () => {
 
       await expect(createChildProfile('guardian-1', {
         nickname: 'Pipo',
-        avatarId: 'pipo',
+        avatarId: 'pinguino',
         temporaryPin
       })).rejects.toMatchObject({
         code: 'INVALID_TEMPORARY_PIN'
@@ -116,7 +166,7 @@ describe('servicio de perfiles infantiles', () => {
 
     await expect(createChildProfile('guardian-1', {
       nickname: 'Pipo',
-      avatarId: 'pipo',
+      avatarId: 'pinguino',
       temporaryPin: '123456'
     })).rejects.toMatchObject({
       code: 'FAMILY_NOT_FOUND'
@@ -131,7 +181,7 @@ describe('servicio de perfiles infantiles', () => {
     const updatedProfile = {
       _id: '507f1f77bcf86cd799439011',
       nickname: 'Pipo nuevo',
-      avatarId: 'guardian',
+      avatarId: 'gato',
       mustChangePin: true
     };
 
@@ -144,19 +194,33 @@ describe('servicio de perfiles infantiles', () => {
 
     await expect(updateChildProfile('guardian-1', '507f1f77bcf86cd799439011', {
       nickname: 'Pipo nuevo',
-      avatarId: 'guardian'
+      avatarId: 'gato'
     })).resolves.toEqual({
       id: '507f1f77bcf86cd799439011',
       nickname: 'Pipo nuevo',
-      avatarId: 'guardian',
+      avatarId: 'gato',
       mustChangePin: true
     });
 
     expect(ChildProfile.findOneAndUpdate).toHaveBeenCalledWith(
       { _id: '507f1f77bcf86cd799439011', familyId: 'family-1' },
-      { $set: { nickname: 'Pipo nuevo', avatarId: 'guardian' } },
+      { $set: { nickname: 'Pipo nuevo', avatarId: 'gato' } },
       { new: true, runValidators: true }
     );
+  });
+
+  test('rechaza un avatar inválido al editar un perfil', async () => {
+    mockGuardian();
+
+    await expect(updateChildProfile(
+      'guardian-1',
+      '507f1f77bcf86cd799439011',
+      { avatarId: 'dragon' }
+    )).rejects.toMatchObject({
+      code: 'INVALID_AVATAR'
+    });
+
+    expect(ChildProfile.findOneAndUpdate).not.toHaveBeenCalled();
   });
 
   test('rechaza la edición de un perfil que no pertenece a la familia', async () => {

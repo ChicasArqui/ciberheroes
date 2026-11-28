@@ -1,5 +1,6 @@
 
 const mongoose = require('mongoose');
+const { CHILD_AVATAR_IDS } = require('./child-profile.constants');
 
 const childProfileSchema = new mongoose.Schema({
   familyId: {
@@ -18,7 +19,8 @@ const childProfileSchema = new mongoose.Schema({
   avatarId: {
     type: String,
     required: true,
-    trim: true
+    trim: true,
+    enum: CHILD_AVATAR_IDS
   },
   pinHash: {
     type: String,
