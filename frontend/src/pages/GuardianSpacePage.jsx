@@ -4,15 +4,15 @@ import { createChildProfile, getChildProfiles, getGuardianFamily, logoutGuardian
 import './GuardianSpacePage.css';
 
 const AVATARS = [
-  { id: 'zorro', label: 'Zorro', emoji: '🦊', tone: 'lilac' },
-  { id: 'gato', label: 'Gato', emoji: '🐱', tone: 'pink' },
-  { id: 'perro', label: 'Perro', emoji: '🐶', tone: 'blue' },
-  { id: 'conejo', label: 'Conejo', emoji: '🐰', tone: 'mint' },
-  { id: 'pinguino', label: 'Pingüino', emoji: '🐧', tone: 'blue' },
-  { id: 'buho', label: 'Búho', emoji: '🦉', tone: 'yellow' },
-  { id: 'mapache', label: 'Mapache', emoji: '🦝', tone: 'lilac' },
-  { id: 'koala', label: 'Koala', emoji: '🐨', tone: 'mint' },
-  { id: 'leon', label: 'León', emoji: '🦁', tone: 'yellow' },
+  { id: 'zorro', label: 'Zorro', image: '/assets/avatars/zorro.png', tone: 'lilac' },
+  { id: 'gato', label: 'Gato', image: '/assets/avatars/gato.png', tone: 'pink' },
+  { id: 'perro', label: 'Perro', image: '/assets/avatars/perro.png', tone: 'blue' },
+  { id: 'conejo', label: 'Conejo', image: '/assets/avatars/conejo.png', tone: 'mint' },
+  { id: 'pinguino', label: 'Pingüino', image: '/assets/avatars/pinguino.png', tone: 'blue' },
+  { id: 'buho', label: 'Búho', image: '/assets/avatars/buho.png', tone: 'yellow' },
+  { id: 'mapache', label: 'Mapache', image: '/assets/avatars/mapache.png', tone: 'lilac' },
+  { id: 'koala', label: 'Koala', image: '/assets/avatars/koala.png', tone: 'mint' },
+  { id: 'leon', label: 'León', image: '/assets/avatars/leon.png', tone: 'yellow' },
 ];
 const avatarFor = (id) => AVATARS.find((avatar) => avatar.id === id) || AVATARS[0];
 
@@ -66,7 +66,7 @@ function ProfileForm({ initialProfile, onCancel, onSave, isSaving }) {
           <span className="cib20-label">Elige un avatar</span>
           <p className="cib20-hint">Selecciona el personaje que más te guste.</p>
           <div className="cib20-avatar-picker" role="group" aria-label="Avatares disponibles">
-            {AVATARS.map((avatar) => <button className={`cib20-avatar-option ${avatar.tone}${avatarId === avatar.id ? ' selected' : ''}`} key={avatar.id} type="button" onClick={() => setAvatarId(avatar.id)} aria-pressed={avatarId === avatar.id} aria-label={avatar.label}><span>{avatar.emoji}</span><small>{avatar.label}</small>{avatarId === avatar.id && <Check className="cib20-avatar-check" size={17} />}</button>)}
+            {AVATARS.map((avatar) => <button className={`cib20-avatar-option ${avatar.tone}${avatarId === avatar.id ? ' selected' : ''}`} key={avatar.id} type="button" onClick={() => setAvatarId(avatar.id)} aria-pressed={avatarId === avatar.id} aria-label={avatar.label}><img src={avatar.image} alt="" /><small>{avatar.label}</small>{avatarId === avatar.id && <Check className="cib20-avatar-check" size={17} />}</button>)}
           </div>
         </div>
         {!initialProfile && <div className="cib20-pin-section">
@@ -78,7 +78,7 @@ function ProfileForm({ initialProfile, onCancel, onSave, isSaving }) {
         {error && <p className="cib20-error" role="alert">{error}</p>}
         <div className="cib20-editor-actions"><button className="cib20-secondary-button" type="button" onClick={onCancel} disabled={isSaving}>Cancelar</button><button className="cib20-primary-button" type="submit" disabled={isSaving}>{isSaving ? 'Guardando…' : initialProfile ? 'Guardar cambios' : 'Crear CiberHéroe'} <Check size={18} /></button></div>
       </form>
-      <p className="cib20-editor-footnote"><Sparkles size={16} /> {selected.emoji} {selected.label} seleccionado · Pipo te acompaña en cada paso</p>
+      <p className="cib20-editor-footnote"><Sparkles size={16} /> {selected.label} seleccionado · Pipo te acompaña en cada paso</p>
     </section>
   );
 }
@@ -195,7 +195,7 @@ export default function GuardianSpacePage({ onLogin, onHome }) {
         {successMessage && <p className="cib20-success" role="status"><Check size={17} /> {successMessage}</p>}
         {pageError && <p className="cib20-error" role="alert">{pageError}</p>}
         {profiles.length === 0 ? <div className="cib20-empty-state"><div className="cib20-empty-art">🛡️</div><h3>¡Tu equipo está por comenzar!</h3><p>Aún no has creado perfiles infantiles. Agrega el primero para iniciar esta aventura.</p><button className="cib20-primary-button" type="button" onClick={() => setShowForm(true)}><Plus size={18} /> Crear primer perfil</button></div> : (
-          <div className="cib20-profile-grid">{profiles.map((profile) => { const avatar = avatarFor(profile.avatarId); return <article className="cib20-profile-card" key={profile.id}><div className={`cib20-profile-avatar ${avatar.tone}`} aria-hidden="true">{avatar.emoji}</div><div className="cib20-profile-info"><h3>{profile.nickname}</h3><span>{avatar.label}</span><small className={profile.mustChangePin ? 'pending' : 'ready'}>{profile.mustChangePin ? 'Cambio de PIN pendiente' : 'PIN configurado'}</small></div><div className="cib20-profile-actions"><button className="cib20-icon-button" type="button" onClick={() => { setSuccessMessage(''); setEditingProfile(profile); setShowForm(true); }} aria-label={`Editar perfil de ${profile.nickname}`} title="Editar perfil"><Pencil size={18} /><span>Editar</span></button><button className="cib20-icon-button cib20-delete-button" type="button" onClick={() => handleDeleteProfile(profile)} disabled={deletingProfileId === profile.id} aria-label={`Eliminar perfil de ${profile.nickname}`} title="Eliminar perfil"><Trash2 size={18} /><span>{deletingProfileId === profile.id ? 'Eliminando…' : 'Eliminar'}</span></button></div></article>; })}</div>
+          <div className="cib20-profile-grid">{profiles.map((profile) => { const avatar = avatarFor(profile.avatarId); return <article className="cib20-profile-card" key={profile.id}><div className={`cib20-profile-avatar ${avatar.tone}`}><img src={avatar.image} alt={`Avatar de ${avatar.label}`} /></div><div className="cib20-profile-info"><h3>{profile.nickname}</h3><span>{avatar.label}</span><small className={profile.mustChangePin ? 'pending' : 'ready'}>{profile.mustChangePin ? 'Cambio de PIN pendiente' : 'PIN configurado'}</small></div><div className="cib20-profile-actions"><button className="cib20-icon-button" type="button" onClick={() => { setSuccessMessage(''); setEditingProfile(profile); setShowForm(true); }} aria-label={`Editar perfil de ${profile.nickname}`} title="Editar perfil"><Pencil size={18} /><span>Editar</span></button><button className="cib20-icon-button cib20-delete-button" type="button" onClick={() => handleDeleteProfile(profile)} disabled={deletingProfileId === profile.id} aria-label={`Eliminar perfil de ${profile.nickname}`} title="Eliminar perfil"><Trash2 size={18} /><span>{deletingProfileId === profile.id ? 'Eliminando…' : 'Eliminar'}</span></button></div></article>; })}</div>
         )}
       </section>
       <footer className="guardian-dashboard-footer"><span><ShieldCheck size={16} /> Los PIN se almacenan protegidos.</span><button type="button" onClick={loadSpace}><RefreshCw size={15} /> Actualizar perfiles</button></footer>
