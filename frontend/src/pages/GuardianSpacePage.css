@@ -427,3 +427,29 @@
  .cib20-editor-mascot{width:100%;min-width:0;height:280px;max-width:none}
  .cib20-editor-mascot img{max-width:360px;transform:scale(1.05)}
 }
+
+
+/* Avatares ilustrados locales de CIB-20 */
+.cib20-avatar-option>img{
+  display:block;
+  width:76px;
+  height:76px;
+  object-fit:contain;
+  flex:none;
+}
+.cib20-profile-avatar{
+  overflow:hidden;
+}
+.cib20-profile-avatar>img{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  padding:5px;
+}
+@media(max-width:650px){
+ .cib20-avatar-option>img{width:64px;height:64px}
+}
+@media(max-width:390px){
+ .cib20-avatar-option>img{width:54px;height:54px}
+}
