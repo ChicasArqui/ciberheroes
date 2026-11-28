@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ArrowLeft, Check, LogOut, Plus, RefreshCw, ShieldCheck, UsersRound, Pencil, X, LockKeyhole, Sparkles, Trash2 } from 'lucide-react';
+import { ArrowLeft, Check, LogOut, Plus, RefreshCw, ShieldCheck, UsersRound, Pencil, LockKeyhole, Sparkles, Trash2 } from 'lucide-react';
 import { createChildProfile, getChildProfiles, getGuardianFamily, logoutGuardian, updateChildProfile, deleteChildProfile } from '../services/api.js';
 import './GuardianSpacePage.css';
 
