@@ -1,15 +1,9 @@
 import { useState } from 'react';
-import {
-    getGuardianFamily,
-    loginGuardian,
-    logoutGuardian
-} from '../services/api.js';
-import FamilyCodeDisplay from '../components/FamilyCodeDisplay.jsx';
+import { loginGuardian } from '../services/api.js';
 import SecurityChallenge from '../components/SecurityChallenge.jsx';
-import useGuardianSession from '../hooks/useGuardianSession.js';
 import './GuardianRegisterPage.css';
 
-export default function GuardianLoginPage({ onRegister }) {
+export default function GuardianLoginPage({ onRegister, onAuthenticated }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -18,24 +12,19 @@ export default function GuardianLoginPage({ onRegister }) {
     const [challenge, setChallenge] = useState(null);
     const [challengeToken, setChallengeToken] = useState('');
     const [challengeAttempt, setChallengeAttempt] = useState(0);
-    const {
-        familyCode, setFamilyCode, isAuthenticated, setIsAuthenticated,
-        isCheckingSession, sessionError
-    } = useGuardianSession();
-
     async function handleSubmit(event) {
         event.preventDefault();
         setIsSubmitting(true);
         setFormMessage('');
-        setFamilyCode('');
 
         try {
             await loginGuardian({ email, password, ...(challengeToken ? { challengeToken } : {}) });
             setChallenge(null);
             setChallengeToken('');
-            setIsAuthenticated(true);
             setPassword('');
             setShowPassword(false);
+            setIsSubmitting(false);
+            onAuthenticated?.();
         } catch (error) {
             if (error.code === 'CHALLENGE_REQUIRED' && error.challenge) {
                 setChallenge(error.challenge);
@@ -56,50 +45,14 @@ export default function GuardianLoginPage({ onRegister }) {
             setIsSubmitting(false);
             return;
         }
-
-        try {
-            const family = await getGuardianFamily();
-            setFamilyCode(family.familyCode);
-        } catch {
-            setFormMessage(
-                'Sesión iniciada, pero no pudimos cargar el código familiar.'
-            );
-        } finally {
-            setIsSubmitting(false);
-        }
-    }
-
-    async function handleLogout() {
-        setIsSubmitting(true);
-        setFormMessage('');
-
-        try {
-            await logoutGuardian();
-            setIsAuthenticated(false);
-            setFamilyCode('');
-            setEmail('');
-            setPassword('');
-            setShowPassword(false);
-            setFormMessage('Sesión cerrada.');
-            setChallenge(null);
-            setChallengeToken('');
-        } catch {
-            setFormMessage('No pudimos cerrar sesión. Inténtalo de nuevo.');
-        } finally {
-            setIsSubmitting(false);
-        }
-    }
-
-    if (isCheckingSession) {
-        return <p role="status">Comprobando tu sesión…</p>;
+        setIsSubmitting(false);
     }
 
     return (
         <section className="guardian-register">
             <h1 className="form-title">
-                {isAuthenticated ? 'Tu espacio familiar' : 'Inicia sesión como Guardián'}
+                Inicia sesión como Guardián
             </h1>
-            {sessionError && !isAuthenticated && !formMessage && <p role="alert">{sessionError}</p>}
 
             <form className="guardian-form" onSubmit={handleSubmit}>
                 <div className="guardian-field">
@@ -116,7 +69,7 @@ export default function GuardianLoginPage({ onRegister }) {
                             setChallenge(null);
                             setChallengeToken('');
                         }}
-                        disabled={isAuthenticated || isSubmitting}
+                        disabled={isSubmitting}
                         required
                     />
                 </div>
@@ -132,7 +85,7 @@ export default function GuardianLoginPage({ onRegister }) {
                             autoComplete="current-password"
                             value={password}
                             onChange={(event) => setPassword(event.target.value)}
-                            disabled={isAuthenticated || isSubmitting}
+                            disabled={isSubmitting}
                             required
                         />
                         <button
@@ -151,7 +104,7 @@ export default function GuardianLoginPage({ onRegister }) {
                     </div>
                 </div>
 
-                {challenge && !isAuthenticated && <SecurityChallenge
+                {challenge && <SecurityChallenge
                     key={challengeAttempt}
                     config={challenge}
                     onToken={setChallengeToken}
@@ -160,7 +113,7 @@ export default function GuardianLoginPage({ onRegister }) {
                 <button
                     className="button button-primary guardian-submit"
                     type="submit"
-                    disabled={isAuthenticated || isSubmitting || Boolean(challenge && !challengeToken)}
+                    disabled={isSubmitting || Boolean(challenge && !challengeToken)}
                 >
                     {isSubmitting ? 'Ingresando…' : 'Iniciar sesión'}
                 </button>
@@ -169,21 +122,6 @@ export default function GuardianLoginPage({ onRegister }) {
                     <p className="guardian-message" role="status">
                         {formMessage}
                     </p>
-                )}
-
-                {familyCode && (
-                    <FamilyCodeDisplay familyCode={familyCode} />
-                )}
-
-                {isAuthenticated && (
-                    <button
-                        className="button button-secondary"
-                        type="button"
-                        onClick={handleLogout}
-                        disabled={isSubmitting}
-                    >
-                        {isSubmitting ? 'Cerrando sesión…' : 'Cerrar sesión'}
-                    </button>
                 )}
 
                 <button

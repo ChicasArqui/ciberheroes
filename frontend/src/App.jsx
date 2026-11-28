@@ -7,11 +7,13 @@ import WelcomePage from './pages/WelcomePage.jsx';
 import RoleSelectionPage from './pages/RoleSelectionPage.jsx';
 import GuardianRegisterPage from './pages/GuardianRegisterPage.jsx';
 import GuardianLoginPage from './pages/GuardianLoginPage.jsx';
+import GuardianSpacePage from './pages/GuardianSpacePage.jsx';
 
 function getScreenFromHash() {
   if (window.location.hash === '#roles') return 'roles';
   if (window.location.hash === '#guardian-register') return 'guardian-register';
   if (window.location.hash === '#guardian-login') return 'guardian-login';
+  if (window.location.hash === '#guardian-space') return 'guardian-space';
   return 'welcome';
 }
 export default function App() {
@@ -84,6 +86,17 @@ export default function App() {
     );
   };
 
+  const openGuardianSpace = () => {
+    setNotice('');
+    setPipoSceneOverride('');
+    setScreen('guardian-space');
+    window.history.pushState(
+      { screen: 'guardian-space' },
+      '',
+      '#guardian-space'
+    );
+  };
+
   const showScopeNotice = (role) => {
     if (role === 'guardian') {
       openGuardianRegister();
@@ -96,6 +109,10 @@ export default function App() {
   const showAbout = () => setNotice(
     'CiberHéroes es una experiencia educativa para niñas y niños de 8 a 13 años, acompañada por un adulto de confianza.'
   );
+
+  if (screen === 'guardian-space') {
+    return <GuardianSpacePage onLogin={openGuardianLogin} />;
+  }
 
   return (
     <div className="app-shell">
@@ -110,10 +127,14 @@ export default function App() {
             ) : screen === 'guardian-register' ? (
               <GuardianRegisterPage
                 onLogin={openGuardianLogin}
+                onGuardianSpace={openGuardianSpace}
                 onRegistrationComplete={() => setPipoSceneOverride('guardian-success')}
               />
             ) : (
-              <GuardianLoginPage onRegister={openGuardianRegister} />
+              <GuardianLoginPage
+                onRegister={openGuardianRegister}
+                onAuthenticated={openGuardianSpace}
+              />
             )}
             {notice && (
               <div className="scope-notice" role="status">

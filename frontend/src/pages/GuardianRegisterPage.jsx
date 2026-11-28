@@ -7,7 +7,7 @@ import FamilyCodeDisplay from '../components/FamilyCodeDisplay.jsx';
 import useGuardianSession from '../hooks/useGuardianSession.js';
 import './GuardianRegisterPage.css';
 
-export default function GuardianRegisterPage({ onLogin, onRegistrationComplete }) {
+export default function GuardianRegisterPage({ onLogin, onGuardianSpace, onRegistrationComplete }) {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -123,10 +123,10 @@ export default function GuardianRegisterPage({ onLogin, onRegistrationComplete }
                 <button
                     className="button button-primary guardian-submit"
                     type="button"
-                    onClick={onLogin}
+                    onClick={loginRequired ? onLogin : onGuardianSpace}
                     disabled={isSubmitting}
                 >
-                    {isSubmitting ? 'Preparando tu código…' : loginRequired ? 'Iniciar sesión' : 'Ir a mi espacio familiar'}
+                    {loginRequired ? 'Iniciar sesión' : 'Ir a mi espacio familiar'}
                 </button>
             </section>
         );
