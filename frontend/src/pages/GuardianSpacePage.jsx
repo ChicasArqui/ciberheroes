@@ -54,7 +54,7 @@ function ProfileForm({ initialProfile, onCancel, onSave, isSaving }) {
           <h1>{initialProfile ? 'Editar CiberHéroe' : 'Crear CiberHéroe'}</h1>
           <p>{initialProfile ? 'Actualiza el apodo y el avatar de este perfil.' : 'Completa la información para añadir un nuevo perfil a tu equipo.'}</p>
         </div>
-        <div className="cib20-editor-mascot" aria-hidden="true">🐢<span>✦</span></div>
+        <div className="cib20-editor-mascot"><img src="/assets/pipo-bienvenida.png" alt="Pipo, tu compañero de aventuras" /><span aria-hidden="true">✦</span></div>
       </div>
       <form className="cib20-editor-card" onSubmit={submit}>
         <div className="cib20-editor-fields">
@@ -182,7 +182,7 @@ export default function GuardianSpacePage({ onLogin, onHome }) {
         <nav className="guardian-dashboard-nav" aria-label="Navegación del Guardián"><span className="active"><UsersRound size={18} /> Mi familia</span></nav>
         <div className="guardian-dashboard-actions"><span className="guardian-welcome-label">Espacio del Guardián</span><button className="cib20-secondary-button" type="button" onClick={handleLogout} disabled={isLoggingOut}><LogOut size={17} /> {isLoggingOut ? 'Cerrando…' : 'Cerrar sesión'}</button></div>
       </header>
-      <section className="guardian-dashboard-intro"><p className="cib20-eyebrow"><i /> ESPACIO DEL GUARDIÁN</p><h1>¡Estos son tus CiberHéroes!</h1><p>Administra los perfiles de tu familia y acompáñalos en cada aventura.</p></section>
+      <section className="guardian-dashboard-intro"><div className="guardian-dashboard-intro-copy"><p className="cib20-eyebrow"><i /> ESPACIO DEL GUARDIÁN</p><h1>¡Estos son tus CiberHéroes!</h1><p>Administra los perfiles de tu familia y acompáñalos en cada aventura.</p></div><div className="guardian-dashboard-pipo"><div className="guardian-pipo-speech"><strong>¡Tu equipo está creciendo!</strong><span>Crea, edita y acompaña los perfiles de tus pequeños CiberHéroes.</span></div><img src="/assets/pipo-saludo.png" alt="Pipo, la tortuga guardiana de CiberHéroes" /></div></section>
       <section className="guardian-family-card" aria-label="Código familiar">
         <div className="guardian-family-icon"><ShieldCheck size={30} /></div>
         <div className="guardian-family-copy"><span>Código de tu equipo</span><strong>{familyCode || 'No disponible'}</strong><small>Este código es privado. Compártelo únicamente con tu familia.</small>{copyMessage && <small className="cib20-copy-message" role="status">{copyMessage}</small>}</div>
