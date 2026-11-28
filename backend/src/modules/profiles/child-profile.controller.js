@@ -54,6 +54,7 @@ async function updateChildProfileController(req, res) {
     const statusByCode = {
       FAMILY_NOT_FOUND: 404,
       PROFILE_NOT_FOUND: 404,
+      INVALID_PROFILE_ID: 400,
       INVALID_NICKNAME: 400,
       INVALID_AVATAR: 400,
       NO_PROFILE_CHANGES: 400

@@ -5,21 +5,26 @@ const learningRoutes = require('./modules/learning/learning.routes');
 const authRoutes = require('./modules/auth/auth.routes');
 const { createAuthRateLimiters } = require('./modules/auth/auth-rate-limit');
 const guardianRoutes = require('./modules/profiles/guardian.routes');
+const createChildAuthRoutes = require('./modules/profiles/child-auth.routes');
 
 const frontendDist = path.resolve(__dirname, '../../frontend/dist');
 
-function createApp({ sessionMiddleware, authRateLimiters = createAuthRateLimiters() } = {}) {
+function createApp({
+  sessionMiddleware,
+  authRateLimiters = createAuthRateLimiters(),
+  childPinRateLimiter
+} = {}) {
   const app = express();
 
   if (process.env.NODE_ENV === 'production') {
     app.set('trust proxy', 1);
   }
 
-  // Incluye respuestas correctas, errores y fallos del parser de estas rutas.
-  app.use(['/api/auth', '/api/guardian'], (req, res, next) => {
+  app.use(['/api/auth', '/api/guardian', '/api/child'], (req, res, next) => {
     res.set('Cache-Control', 'no-store');
     next();
   });
+
   app.use(express.json());
 
   if (sessionMiddleware) {
@@ -29,6 +34,7 @@ function createApp({ sessionMiddleware, authRateLimiters = createAuthRateLimiter
   app.use('/api/lecciones', learningRoutes);
   app.use('/api/auth', authRoutes(authRateLimiters));
   app.use('/api/guardian', guardianRoutes);
+  app.use('/api/child', createChildAuthRoutes(childPinRateLimiter));
 
   app.get('/health', (req, res) => {
     res.status(200).json({
@@ -45,8 +51,6 @@ function createApp({ sessionMiddleware, authRateLimiters = createAuthRateLimiter
 
   app.use(express.static(frontendDist));
 
-  // Los errores del parser pueden incluir fragmentos de credenciales.
-  // Responder aquí evita que Express los imprima en sus logs por defecto.
   app.use((error, req, res, next) => {
     if (res.headersSent) return next(error);
 

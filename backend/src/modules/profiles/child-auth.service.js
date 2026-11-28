@@ -13,11 +13,32 @@ function createAuthError(code) {
   return error;
 }
 
-async function authenticateChild(profileId, temporaryPin, rateLimiter) {
-  if (!mongoose.isValidObjectId(profileId) ||
-      typeof temporaryPin !== 'string' ||
-      !PIN_PATTERN.test(temporaryPin)) {
+async function authenticateChild(
+  profileId,
+  temporaryPin,
+  rateLimiter,
+  ip
+) {
+  // Validar las credenciales antes de consultar el limitador.
+  if (
+    !mongoose.isValidObjectId(profileId) ||
+    typeof temporaryPin !== 'string' ||
+    !PIN_PATTERN.test(temporaryPin)
+  ) {
     throw createAuthError('INVALID_CREDENTIALS');
+  }
+
+  if (typeof ip !== 'string' || !ip.trim()) {
+    throw createAuthError('INVALID_CREDENTIALS');
+  }
+
+  // Contabilizar el intento por IP y perfil.
+  const limit = await rateLimiter.consume(profileId, ip);
+
+  if (!limit.allowed) {
+    const error = createAuthError('TOO_MANY_REQUESTS');
+    error.retryAfter = limit.retryAfter;
+    throw error;
   }
 
   const profile = await ChildProfile.findById(profileId)
@@ -27,15 +48,10 @@ async function authenticateChild(profileId, temporaryPin, rateLimiter) {
     throw createAuthError('INVALID_CREDENTIALS');
   }
 
-  const limit = await rateLimiter.consume(profileId);
-
-  if (!limit.allowed) {
-    const error = createAuthError('TOO_MANY_REQUESTS');
-    error.retryAfter = limit.retryAfter;
-    throw error;
-  }
-
-  const validPin = await verifyPassword(temporaryPin, profile.pinHash);
+  const validPin = await verifyPassword(
+    temporaryPin,
+    profile.pinHash
+  );
 
   if (!validPin) {
     throw createAuthError('INVALID_CREDENTIALS');

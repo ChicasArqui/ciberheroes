@@ -129,7 +129,7 @@ describe('servicio de perfiles infantiles', () => {
     mockGuardian();
 
     const updatedProfile = {
-      _id: 'profile-1',
+      _id: '507f1f77bcf86cd799439011',
       nickname: 'Pipo nuevo',
       avatarId: 'guardian',
       mustChangePin: true
@@ -142,18 +142,18 @@ describe('servicio de perfiles infantiles', () => {
 
     ChildProfile.findOneAndUpdate.mockReturnValue(query);
 
-    await expect(updateChildProfile('guardian-1', 'profile-1', {
+    await expect(updateChildProfile('guardian-1', '507f1f77bcf86cd799439011', {
       nickname: 'Pipo nuevo',
       avatarId: 'guardian'
     })).resolves.toEqual({
-      id: 'profile-1',
+      id: '507f1f77bcf86cd799439011',
       nickname: 'Pipo nuevo',
       avatarId: 'guardian',
       mustChangePin: true
     });
 
     expect(ChildProfile.findOneAndUpdate).toHaveBeenCalledWith(
-      { _id: 'profile-1', familyId: 'family-1' },
+      { _id: '507f1f77bcf86cd799439011', familyId: 'family-1' },
       { $set: { nickname: 'Pipo nuevo', avatarId: 'guardian' } },
       { new: true, runValidators: true }
     );
@@ -169,14 +169,14 @@ describe('servicio de perfiles infantiles', () => {
 
     ChildProfile.findOneAndUpdate.mockReturnValue(query);
 
-    await expect(updateChildProfile('guardian-1', 'profile-otro', {
+    await expect(updateChildProfile('guardian-1', '507f1f77bcf86cd799439012', {
       nickname: 'Intento de acceso'
     })).rejects.toMatchObject({
       code: 'PROFILE_NOT_FOUND'
     });
 
     expect(ChildProfile.findOneAndUpdate).toHaveBeenCalledWith(
-      { _id: 'profile-otro', familyId: 'family-1' },
+      { _id: '507f1f77bcf86cd799439012', familyId: 'family-1' },
       { $set: { nickname: 'Intento de acceso' } },
       { new: true, runValidators: true }
     );

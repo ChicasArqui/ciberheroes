@@ -5,8 +5,12 @@ const app = require('./app');
 const { connectDB } = require('./config/database');
 const { createSessionMiddleware } = require('./config/session');
 const mongoose = require('mongoose');
+
 const { createAuthRateLimiters } = require('./modules/auth/auth-rate-limit');
 const { ensureAuthIndexes } = require('./modules/auth/auth-indexes');
+const {
+  createChildPinRateLimiter
+} = require('./modules/profiles/child-auth-rate-limit');
 
 const PORT = process.env.PORT || 3000;
 
@@ -14,16 +18,37 @@ async function startServer() {
   await connectDB();
   await ensureAuthIndexes();
 
+  const storeClient = mongoose.connection.getClient();
+  const dbName = mongoose.connection.name;
+  const secret = process.env.SESSION_SECRET;
+
+  if (!secret) {
+    throw new Error('SESSION_SECRET_NOT_CONFIGURED');
+  }
+
   const sessionMiddleware = createSessionMiddleware();
+
   const authRateLimiters = createAuthRateLimiters({
-    storeClient: mongoose.connection.getClient(),
-    dbName: mongoose.connection.name,
-    secret: process.env.SESSION_SECRET
+    storeClient,
+    dbName,
+    secret
   });
-  await authRateLimiters.ready;
+
+  const childPinRateLimiter = createChildPinRateLimiter({
+    storeClient,
+    dbName,
+    secret
+  });
+
+  await Promise.all([
+    authRateLimiters.ready,
+    childPinRateLimiter.ready
+  ]);
 
   const serverApp = app.createApp({
-    sessionMiddleware, authRateLimiters
+    sessionMiddleware,
+    authRateLimiters,
+    childPinRateLimiter
   });
 
   serverApp.listen(PORT, '0.0.0.0', () => {

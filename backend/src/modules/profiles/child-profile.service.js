@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const ChildProfile = require('./child-profile.model');
 const Guardian = require('../auth/guardian.model');
 const { hashPassword } = require('../auth/password.service');
@@ -76,6 +77,10 @@ async function updateChildProfile(
   profileId,
   { nickname, avatarId } = {}
 ) {
+  if (!mongoose.isValidObjectId(profileId)) {
+    throw createServiceError('INVALID_PROFILE_ID');
+  }
+
   const familyId = await getGuardianFamilyId(guardianId);
 
   if (!familyId) {
