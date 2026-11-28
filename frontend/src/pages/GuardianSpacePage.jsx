@@ -29,7 +29,7 @@ function ProfileForm({ initialProfile, onCancel, onSave, isSaving }) {
     if (nickname.trim().length < 2 || nickname.trim().length > 20) {
       setError('El apodo debe tener entre 2 y 20 caracteres.'); return;
     }
-    if (!initialProfile && !/^\\d{6}$/.test(temporaryPin)) {
+    if (!initialProfile && !/^\d{6}$/.test(temporaryPin)) {
       setError('El PIN temporal debe tener exactamente 6 números.'); return;
     }
     try {
@@ -72,7 +72,7 @@ function ProfileForm({ initialProfile, onCancel, onSave, isSaving }) {
         {!initialProfile && <div className="cib20-pin-section">
           <label className="cib20-label" htmlFor="temporary-pin"><LockKeyhole size={17} /> Configura un PIN temporal</label>
           <p className="cib20-hint">Crea un PIN de 6 dígitos. El CiberHéroe lo cambiará en su primer ingreso.</p>
-          <div className="cib20-pin-wrap"><input id="temporary-pin" className="cib20-input cib20-pin-input" inputMode="numeric" autoComplete="new-password" pattern="[0-9]{6}" minLength={6} maxLength={6} value={temporaryPin} onChange={(event) => setTemporaryPin(event.target.value.replace(/\\D/g, '').slice(0, 6))} placeholder="••••••" type={showPin ? 'text' : 'password'} required /><button type="button" className="cib20-pin-toggle" onClick={() => setShowPin((value) => !value)} aria-label={showPin ? 'Ocultar PIN' : 'Mostrar PIN'}>{showPin ? 'Ocultar' : 'Mostrar'}</button></div>
+          <div className="cib20-pin-wrap"><input id="temporary-pin" className="cib20-input cib20-pin-input" inputMode="numeric" autoComplete="new-password" pattern="[0-9]{6}" minLength={6} maxLength={6} value={temporaryPin} onChange={(event) => setTemporaryPin(event.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="••••••" type={showPin ? 'text' : 'password'} required /><button type="button" className="cib20-pin-toggle" onClick={() => setShowPin((value) => !value)} aria-label={showPin ? 'Ocultar PIN' : 'Mostrar PIN'}>{showPin ? 'Ocultar' : 'Mostrar'}</button></div>
         </div>}
         {initialProfile && <div className="cib20-pin-notice"><LockKeyhole size={22} /><div><strong>PIN del perfil</strong><span>{initialProfile.mustChangePin ? 'El niño debe cambiar su PIN en su próximo acceso.' : 'El perfil ya configuró su PIN personal.'}</span></div><b>{initialProfile.mustChangePin ? 'Cambio pendiente' : 'Configurado'}</b></div>}
         {error && <p className="cib20-error" role="alert">{error}</p>}
